@@ -1,15 +1,15 @@
-#include <greeter.h>
+#include <smark.h>
 
 #include <cxxopts.hpp>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 
-const std::unordered_map<std::string, greeter::LanguageCode> languages{
-    {"en", greeter::LanguageCode::EN},
-    {"de", greeter::LanguageCode::DE},
-    {"es", greeter::LanguageCode::ES},
-    {"fr", greeter::LanguageCode::FR},
+const std::unordered_map<std::string, smark::LanguageCode> languages{
+    {"en", smark::LanguageCode::EN},
+    {"de", smark::LanguageCode::DE},
+    {"es", smark::LanguageCode::ES},
+    {"fr", smark::LanguageCode::FR},
 };
 
 int main(int argc, char** argv) {
@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  greeter::Greeter greeter(name);
-  std::cout << greeter.greet(langIt->second) << std::endl;
+  smark::Smark smark(name);
+  std::cout << smark.greet(langIt->second) << std::endl;
 
   return 0;
 }

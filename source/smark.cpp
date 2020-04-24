@@ -1,10 +1,10 @@
-#include <greeter.h>
+#include <smark.h>
 
-using namespace greeter;
+using namespace smark;
 
-Greeter::Greeter(std::string _name) : name(_name) {}
+Smark::Smark(std::string _name) : name(_name) {}
 
-std::string Greeter::greet(LanguageCode lang) const {
+std::string Smark::greet(LanguageCode lang) const {
   switch (lang) {
     default:
     case LanguageCode::EN:
