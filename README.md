@@ -1,9 +1,9 @@
-[![Actions Status](https://github.com/TheLartians/ModernCppStarter/workflows/MacOS/badge.svg)](https://github.com/TheLartians/ModernCppStarter/actions)
-[![Actions Status](https://github.com/TheLartians/ModernCppStarter/workflows/Windows/badge.svg)](https://github.com/TheLartians/ModernCppStarter/actions)
-[![Actions Status](https://github.com/TheLartians/ModernCppStarter/workflows/Ubuntu/badge.svg)](https://github.com/TheLartians/ModernCppStarter/actions)
-[![Actions Status](https://github.com/TheLartians/ModernCppStarter/workflows/Style/badge.svg)](https://github.com/TheLartians/ModernCppStarter/actions)
-[![Actions Status](https://github.com/TheLartians/ModernCppStarter/workflows/Install/badge.svg)](https://github.com/TheLartians/ModernCppStarter/actions)
-[![codecov](https://codecov.io/gh/TheLartians/ModernCppStarter/branch/master/graph/badge.svg)](https://codecov.io/gh/TheLartians/ModernCppStarter)
+[![Actions Status](https://github.com/RobertIndie/smark/workflows/MacOS/badge.svg)](https://github.com/RobertIndie/smark/actions)
+[![Actions Status](https://github.com/RobertIndie/smark/workflows/Windows/badge.svg)](https://github.com/RobertIndie/smark/actions)
+[![Actions Status](https://github.com/RobertIndie/smark/workflows/Ubuntu/badge.svg)](https://github.com/RobertIndie/smark/actions)
+[![Actions Status](https://github.com/RobertIndie/smark/workflows/Style/badge.svg)](https://github.com/RobertIndie/smark/actions)
+[![Actions Status](https://github.com/RobertIndie/smark/workflows/Install/badge.svg)](https://github.com/RobertIndie/smark/actions)
+[![codecov](https://codecov.io/gh/RobertIndie/smark/branch/master/graph/badge.svg)](https://codecov.io/gh/RobertIndie/smark)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
 <p align="center">
