@@ -2,16 +2,16 @@
 
 #include <string>
 
-namespace greeter {
+namespace smark {
 
   enum class LanguageCode { EN, DE, ES, FR };
 
-  class Greeter {
+  class Smark {
     std::string name;
 
   public:
-    Greeter(std::string name);
+    Smark(std::string name);
     std::string greet(LanguageCode lang = LanguageCode::EN) const;
   };
 
-}  // namespace greeter
+}  // namespace smark

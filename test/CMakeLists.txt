@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
-project(GreeterTests
+project(SmarkTests
   LANGUAGES CXX
 )
 
@@ -20,10 +20,10 @@ CPMAddPackage(
 )
 
 if (TEST_INSTALLED_VERSION)
-  find_package(Greeter REQUIRED)
+  find_package(Smark REQUIRED)
 else()
   CPMAddPackage(
-    NAME Greeter
+    NAME Smark
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/..
   )
 endif()
@@ -37,34 +37,35 @@ CPMAddPackage(
 # ---- Create binary ----
 
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
-add_executable(GreeterTests ${sources})
-target_link_libraries(GreeterTests doctest Greeter)
+add_executable(SmarkTests ${sources})
+target_link_libraries(SmarkTests doctest Smark)
 
-set_target_properties(GreeterTests PROPERTIES CXX_STANDARD 17)
+set_target_properties(SmarkTests PROPERTIES CXX_STANDARD 17)
 
 # enable compiler warnings
 if (NOT TEST_INSTALLED_VERSION)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    target_compile_options(Greeter PUBLIC -Wall -pedantic -Wextra -Werror)
+    target_compile_options(Smark PUBLIC -Wall -pedantic -Wextra -Werror)
   elseif(MSVC)
-    target_compile_options(Greeter PUBLIC /W4 /WX)
+    target_compile_options(Smark PUBLIC /W4 /WX)
+    target_compile_definitions(SmarkTests PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
   endif()
 endif()
 
-# ---- Add GreeterTests ----
+# ---- Add SmarkTests ----
 
 ENABLE_TESTING() 
 
 # Note: doctest and similar testing frameworks can automatically configure CMake tests
 # For other testing frameworks add the tests target instead:
-# ADD_TEST(GreeterTests GreeterTests)
+# ADD_TEST(SmarkTests SmarkTests)
 
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-doctest_discover_tests(GreeterTests)
+doctest_discover_tests(SmarkTests)
 
 # ---- code coverage ----
 
 if (ENABLE_TEST_COVERAGE)
-  target_compile_options(Greeter PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
-  target_link_options(Greeter PUBLIC -fprofile-arcs -ftest-coverage)
+  target_compile_options(Smark PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
+  target_link_options(Smark PUBLIC -fprofile-arcs -ftest-coverage)
 endif()
