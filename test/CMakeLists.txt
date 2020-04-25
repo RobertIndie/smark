@@ -48,6 +48,7 @@ if (NOT TEST_INSTALLED_VERSION)
     target_compile_options(Smark PUBLIC -Wall -pedantic -Wextra -Werror)
   elseif(MSVC)
     target_compile_options(Smark PUBLIC /W4 /WX)
+    target_compile_definitions(SmarkTests PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
   endif()
 endif()
 
