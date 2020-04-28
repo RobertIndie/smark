@@ -57,7 +57,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC ae)
+target_link_libraries(Smark PUBLIC ae pthread)
 
 target_include_directories(Smark
   PUBLIC
