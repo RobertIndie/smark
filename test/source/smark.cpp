@@ -68,13 +68,13 @@ TEST_CASE("TCPClient") {
 TEST_CASE("BasicBenchmark") {
   RunServer();
   Smark smark;
-  smark.setting.connection_count = 4;
-  smark.setting.thread_count = 2;
+  smark.setting.connection_count = 1;
+  smark.setting.thread_count = 1;
   smark.setting.ip = "127.0.0.1";
   smark.setting.port = 3000;
   // smark.setting.timeout_us = -1;
   smark.Run();
-  CHECK(smark.status.finish_count == 4);
+  CHECK(smark.status.finish_count == 1);
 }
 
 TEST_CASE("Smark") {
