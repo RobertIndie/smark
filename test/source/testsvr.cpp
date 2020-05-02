@@ -1,5 +1,7 @@
 #include "testsvr.h"
 
+#include "debug.h"
+
 namespace smark_tests {
   void setnonblocking(int sock) {
     int opts;
@@ -46,9 +48,6 @@ namespace smark_tests {
   }
   void TestServer::Run() {
     epoll_event ev;
-#define ERR(err) \
-  perror(err);   \
-  throw err;
     int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
     if (epoll_fd == -1) {
       ERR("epoll create fail.")
@@ -65,6 +64,7 @@ namespace smark_tests {
     while (true) {
       int nfds = epoll_wait(epoll_fd, events, MAX_EVENT, -1);
       if (nfds == -1) {
+        if (errno == EINTR) continue;
         ERR("error epoll_wait.");
       }
       for (int i = 0; i < nfds; i++) {

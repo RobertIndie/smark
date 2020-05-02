@@ -48,6 +48,8 @@ namespace smark::util {
 
   void EventLoop::Wait() { aeMain(ae_el_); }
 
+  void EventLoop::Stop() { aeStop(ae_el_); }
+
   Socket::Socket() {
     fd_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (fd_ < 0) {

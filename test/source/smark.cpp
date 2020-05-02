@@ -39,6 +39,7 @@ void RunServer() {
 
 TEST_CASE("TCPClient") {
   RunServer();
+  // pthread_join(svr_thread, NULL);
   int task = 0;
   using namespace smark;
   TCPClient cli;
@@ -51,6 +52,7 @@ TEST_CASE("TCPClient") {
     (void)el;
     task++;
     cli.Send(data, sizeof(data));
+    cli.writable_event = [](auto) {};
   };
   cli.readable_event = [&cli, &task, &data](util::EventLoop* el) {
     (void)el;
@@ -58,6 +60,8 @@ TEST_CASE("TCPClient") {
     char buff[1024];
     cli.Recv(buff, sizeof(buff));
     CHECK(strcmp(buff, data) == 0);
+    el->Stop();
+    cli.readable_event = [](auto) {};
   };
   el.Wait();
 }
