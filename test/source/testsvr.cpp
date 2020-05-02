@@ -36,11 +36,11 @@ namespace smark_tests {
     myserver.sin_port = htons(listen_port);
 
     if (bind(sock_fd_, (sockaddr *)&myserver, sizeof(myserver)) < 0) {
-      throw "bind() failed";
+      ERR("bind fail.");
     }
 
     if (listen(sock_fd_, kMaxConns) < 0) {
-      throw "listen() failed";
+      ERR("listen fail.");
     }
 
     flags = 1;
