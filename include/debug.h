@@ -12,9 +12,10 @@
 #  define DLOG(exp)
 #endif
 #include <sstream>
-#define ERR(exp)                                                       \
-  {                                                                    \
-    std::ostringstream oss;                                            \
-    oss << __FILE__ << ":" << __LINE__ << "(" << errno << "):" << exp; \
-    throw oss.str();                                                   \
+#define ERR(exp)                        \
+  {                                     \
+    std::ostringstream oss;             \
+    oss << "(" << errno << "):" << exp; \
+    DLOG("Error: " << oss.str())        \
+    throw oss.str();                    \
   }
