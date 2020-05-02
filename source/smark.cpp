@@ -35,24 +35,27 @@ namespace smark {
         for (uint i = 0; i < conn_per_thread; i++) {
           auto clip = std::make_shared<TCPClient>();
           clients.push_back(clip);
-          clip->writable_event = [clip, &data, this, &status, &conn_per_thread](auto) {  // write
-            clip->writable_event = [](auto) {};
-            clip->readable_event = [clip, &data, this, &status,
-                                    &conn_per_thread](util::EventLoop* el) {  // read
-              clip->readable_event = [](auto) {};
-              char buff[1024];
-              clip->Recv(buff, sizeof(buff));
-              if (strcmp(buff, data) != 0) ERR("Recv error.");
-              status.finish_count++;
-              if (status.finish_count >= conn_per_thread) el->Stop();
-              std::lock_guard<std::mutex> guard(status_mutex_);
-              this->status.finish_count++;
-            };
-            clip->Send(data, sizeof(data));
-            status.request_count++;
-            std::lock_guard<std::mutex> guard(status_mutex_);
-            this->status.request_count++;
-          };
+          clip->writable_event
+              = [clip, &data, this, &status, &conn_per_thread](util::EventLoop* el) {  // write
+                  el->DelEvent(clip.get(), smark::util::EventLoop::EventFlag::kWriteable);
+                  // clip->writable_event = [](auto) {}; // do not use this: it make clip null
+                  clip->readable_event = [clip, &data, this, &status,
+                                          &conn_per_thread](util::EventLoop* el) {  // read
+                    el->DelEvent(clip.get(), smark::util::EventLoop::EventFlag::kReadable);
+                    // clip->readable_event = [](auto) {}; // also don't use this
+                    char buff[1024];
+                    clip->Recv(buff, sizeof(buff));
+                    if (strcmp(buff, data) != 0) ERR("Recv error.");
+                    status.finish_count++;
+                    if (status.finish_count >= conn_per_thread) el->Stop();
+                    std::lock_guard<std::mutex> guard(status_mutex_);
+                    this->status.finish_count++;
+                  };
+                  clip->Send(data, sizeof(data));
+                  status.request_count++;
+                  std::lock_guard<std::mutex> guard(status_mutex_);
+                  this->status.request_count++;
+                };
           clip->Connect(this->setting.ip, this->setting.port);
           el.SetEvent(clip.get());
         }

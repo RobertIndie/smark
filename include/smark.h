@@ -12,17 +12,17 @@ namespace smark {
 
   class SmarkSetting {
   public:
-    uint connection_count;
-    uint thread_count;
-    int timeout_us;
+    uint connection_count = 0;
+    uint thread_count = 0;
+    int timeout_us = -1;
     std::string ip;
     uint16_t port;
   };
 
   class Status {
   public:
-    uint request_count;
-    uint finish_count;
+    uint request_count = 0;
+    uint finish_count = 0;
   };
 
   class Smark {
