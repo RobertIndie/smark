@@ -1,11 +1,15 @@
 #pragma once
 #ifdef __linux__
 #  define SUPPORT_AE
+#  define SUPPORT_PTHREAD
 #endif
 #ifdef SUPPORT_AE
 extern "C" {
 #  include <ae.h>
 }
+#endif
+#ifdef SUPPORT_PTHREAD
+#  include <pthread.h>
 #endif
 
 #include <functional>
@@ -45,6 +49,16 @@ namespace smark::util {
 #ifdef SUPPORT_AE
   private:
     int fd_ = -1;
+#endif
+  };
+  class Thread {
+  public:
+    Thread(void* (*func)(void*));
+    ~Thread();
+    void Join();
+#ifdef SUPPORT_PTHREAD
+  private:
+    pthread_t pt_;
 #endif
   };
 }  // namespace smark::util

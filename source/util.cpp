@@ -89,4 +89,15 @@ namespace smark::util {
   }
 
   int Socket::GetFD() const { return fd_; }
+
+  Thread::Thread(void *(*func)(void *)) {
+    errno = pthread_create(&pt_, nullptr, func, nullptr);
+    if (errno != 0) {
+      ERR("pthread_create fail.");
+    }
+  }
+
+  Thread::~Thread() { pthread_exit(&pt_); }
+
+  void Thread::Join() { pthread_join(pt_, nullptr); }
 }  // namespace smark::util
