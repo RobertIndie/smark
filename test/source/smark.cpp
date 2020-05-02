@@ -15,6 +15,7 @@
 #endif
 
 #include "testsvr.h"
+
 using namespace smark_tests;
 TestServer* test_svr = nullptr;
 pthread_t svr_thread;
@@ -44,7 +45,7 @@ TEST_CASE("TCPClient") {
   TCPClient cli;
   util::EventLoop el(13);
   el.SetEvent(&cli);
-  cli.Connect("127.0.0.1", 3000);
+  cli.Connect("127.0.0.1", SVR_PORT);
   DLOG("Connected");
   const char data[] = "Hello world";
   cli.writable_event = [&cli, &task, &data](util::EventLoop* el) {
@@ -71,7 +72,7 @@ TEST_CASE("BasicBenchmark") {
   smark.setting.connection_count = 4;
   smark.setting.thread_count = 2;
   smark.setting.ip = "127.0.0.1";
-  smark.setting.port = 3000;
+  smark.setting.port = SVR_PORT;
   // smark.setting.timeout_us = -1;
   smark.Run();
   CHECK(smark.status.finish_count == smark.setting.connection_count);
