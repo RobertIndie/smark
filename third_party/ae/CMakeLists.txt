@@ -23,18 +23,19 @@ include(../../cmake/tools.cmake)
 include(../../cmake/CPM.cmake)
 
 # PackageProject.cmake will be used to make our target installable
-# CPMAddPackage(
-#   NAME PackageProject.cmake
-#   GITHUB_REPOSITORY TheLartians/PackageProject.cmake
-#   VERSION 1.2
-# )
+CPMAddPackage(
+  NAME PackageProject.cmake
+  GITHUB_REPOSITORY TheLartians/PackageProject.cmake
+  VERSION 1.2
+)
 
 # ---- Add source files ----
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files automatically.
 # Keep that in mind when changing files, or explicitly mention them here.
 FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
-FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/ae.c")
+FILE(GLOB_RECURSE ae CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/ae.c")
+FILE(GLOB_RECURSE zmalloc CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/zmalloc.c")
 
 # ---- Create library ----
 
@@ -42,7 +43,7 @@ FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/
 # add_library(Smark INTERFACE)  
 # set_target_properties(Smark PROPERTIES INTERFACE_COMPILE_FEATURES cxx_std_17)
 
-add_library(ae ${headers} ${sources})
+add_library(ae ${headers} ${ae} ${zmalloc})
 
 set_target_properties(ae PROPERTIES C_STANDARD 11)
 
