@@ -66,12 +66,19 @@ namespace smark::util {
     }
   }
 
-  int Socket::Write(const char *data, int len) { write(fd_, data, len); }
+  int Socket::Write(const char *data, int len) {
+    auto ret = write(fd_, data, len);
+    if (ret == -1) {
+      ERR("Write err");
+    }
+    return ret;
+  }
 
   int Socket::Read(char *buff, int len) {
     auto ret = read(fd_, buff, len);
     if (ret == -1) {
       ERR("Read err.");
     }
+    return ret;
   }
 }  // namespace smark::util
