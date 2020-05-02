@@ -1,6 +1,7 @@
 #include "util.h"
 
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include <memory>
@@ -57,17 +58,32 @@ namespace smark::util {
     }
   }
 
+  void set_nonblocking(int sock) {
+    int opts;
+    opts = fcntl(sock, F_GETFL);
+    if (opts < 0) {
+      ERR("set_nonblocking: get file status flags fail.");
+    }
+    opts = opts | O_NONBLOCK;
+    if (fcntl(sock, F_SETFL, opts) < 0) {
+      ERR("set_nonblocking: set file status flags fail.");
+    }
+  }
+
   void Socket::Connect(std::string ip, int16_t port) {
     sockaddr_in serv_addr;
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
+
+    set_nonblocking(fd_);
 
     // Convert IPv4 and IPv6 addresses from text to binary form
     if (inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr) <= 0) {
       ERR("Invalid address:" << LOG_VALUE(ip));
     }
 
-    if (connect(fd_, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    if (connect(fd_, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0
+        && errno != EINPROGRESS) {
       ERR("Connect fail.");
     }
   }
@@ -89,15 +105,4 @@ namespace smark::util {
   }
 
   int Socket::GetFD() const { return fd_; }
-
-  Thread::Thread(void *(*func)(void *)) {
-    errno = pthread_create(&pt_, nullptr, func, nullptr);
-    if (errno != 0) {
-      ERR("pthread_create fail.");
-    }
-  }
-
-  Thread::~Thread() { pthread_exit(&pt_); }
-
-  void Thread::Join() { pthread_join(pt_, nullptr); }
 }  // namespace smark::util

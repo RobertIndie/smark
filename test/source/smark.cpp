@@ -36,12 +36,11 @@ void RunServer() {
     }
   }
 }
-
+using namespace smark;
 TEST_CASE("TCPClient") {
   RunServer();
-  // pthread_join(svr_thread, NULL);
   int task = 0;
-  using namespace smark;
+
   TCPClient cli;
   util::EventLoop el(13);
   el.SetEvent(&cli);
@@ -64,6 +63,18 @@ TEST_CASE("TCPClient") {
   };
   el.Wait();
   CHECK(task == 1);
+}
+
+TEST_CASE("BasicBenchmark") {
+  RunServer();
+  Smark smark;
+  smark.setting.connection_count = 4;
+  smark.setting.thread_count = 2;
+  smark.setting.ip = "127.0.0.1";
+  smark.setting.port = 3000;
+  // smark.setting.timeout_us = -1;
+  smark.Run();
+  CHECK(smark.status.finish_count == 4);
 }
 
 TEST_CASE("Smark") {

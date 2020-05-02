@@ -51,14 +51,4 @@ namespace smark::util {
     int fd_ = -1;
 #endif
   };
-  class Thread {
-  public:
-    Thread(void* (*func)(void*));
-    ~Thread();
-    void Join();
-#ifdef SUPPORT_PTHREAD
-  private:
-    pthread_t pt_;
-#endif
-  };
 }  // namespace smark::util
