@@ -47,10 +47,9 @@ TEST_CASE("TCPClient") {
   el.SetEvent(&cli);
   cli.Connect("127.0.0.1", 3000);
   DLOG("Connected");
-  const char* data = "Hello world";
+  const char data[] = "Hello world";
   cli.writable_event = [&cli, &task, &data](util::EventLoop* el) {
     (void)el;
-    task++;
     cli.Send(data, sizeof(data));
     cli.writable_event = [](auto) {};
   };
@@ -64,6 +63,7 @@ TEST_CASE("TCPClient") {
     cli.readable_event = [](auto) {};
   };
   el.Wait();
+  CHECK(task == 1);
 }
 
 TEST_CASE("Smark") {

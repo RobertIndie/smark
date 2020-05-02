@@ -101,7 +101,8 @@ namespace smark_tests {
 #endif
           }
           if (rsize > 0) {
-            write(fd, buffer, rsize);
+            int curr_w = 0;
+            while (curr_w != rsize) curr_w += write(fd, buffer, rsize);
           }
         }
       }

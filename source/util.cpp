@@ -27,7 +27,7 @@ namespace smark::util {
     (void)mask;
     auto el = reinterpret_cast<EventLoop *>(data);
     auto obj = el->obj_map_[fd];
-    if (obj->readable_event) obj->writable_event(el);
+    if (obj->readable_event) obj->readable_event(el);
   }
   void EventLoop::SetEvent(const IEventObj *obj, EventFlag flag) {
     obj_map_[obj->GetFD()] = obj;
