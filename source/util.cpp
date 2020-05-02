@@ -1,5 +1,8 @@
 #include "util.h"
 
+#include <arpa/inet.h>
+#include <unistd.h>
+
 #include <memory>
 #include <tuple>
 
@@ -40,4 +43,35 @@ namespace smark::util {
   }
 
   void EventLoop::Wait() { aeMain(ae_el_); }
+
+  Socket::Socket() {
+    fd_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (fd_ < 0) {
+      ERR("Create socket fail.");
+    }
+  }
+
+  void Socket::Connect(std::string ip, int16_t port) {
+    sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(port);
+
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if (inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr) <= 0) {
+      ERR("Invalid address:" << LOG_VALUE(ip));
+    }
+
+    if (connect(fd_, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+      ERR("Connect fail.");
+    }
+  }
+
+  int Socket::Write(const char *data, int len) { write(fd_, data, len); }
+
+  int Socket::Read(char *buff, int len) {
+    auto ret = read(fd_, buff, len);
+    if (ret == -1) {
+      ERR("Read err.");
+    }
+  }
 }  // namespace smark::util
