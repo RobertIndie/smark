@@ -16,11 +16,15 @@ namespace smark::util {
   }
 
   void EventLoop::writable_proc(aeEventLoop *loop, int fd, void *data, int mask) {
+    (void)loop;  // prevent unused parameter error
+    (void)mask;
     auto el = reinterpret_cast<EventLoop *>(data);
     auto obj = el->obj_map_[fd];
     if (obj->writable_event) obj->writable_event(el);
   }
   void EventLoop::readable_proc(aeEventLoop *loop, int fd, void *data, int mask) {
+    (void)loop;
+    (void)mask;
     auto el = reinterpret_cast<EventLoop *>(data);
     auto obj = el->obj_map_[fd];
     if (obj->readable_event) obj->writable_event(el);
@@ -81,4 +85,6 @@ namespace smark::util {
     }
     return ret;
   }
+
+  int Socket::GetFD() const { return fd_; }
 }  // namespace smark::util
