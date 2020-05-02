@@ -32,12 +32,13 @@ namespace smark::util {
     static void readable_proc(aeEventLoop* loop, int fd, void* data, int mask);
 #endif
   };
-  class Socket {
+  class Socket : public IEventObj {
   public:
     Socket();
     void Connect(std::string ip, int16_t port);
     int Write(const char* data, int len);
     int Read(char* buff, int len);
+    int GetFD() const;
 #ifdef SUPPORT_AE
   private:
     int fd_ = -1;

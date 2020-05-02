@@ -13,4 +13,6 @@ namespace smark {
   }
 
   void TCPClient::Recv(char* buff, int len) { socket_.Read(buff, len); }
+
+  int TCPClient::GetFD() const { return socket_.GetFD(); }
 }  // namespace smark

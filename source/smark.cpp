@@ -1,5 +1,7 @@
 #include <smark.h>
 
+#include "client.h"
+#include "util.h"
 using namespace smark;
 
 Smark::Smark(std::string _name) : name(_name) {}
