@@ -3,7 +3,9 @@
 #  define SUPPORT_AE
 #endif
 #ifdef SUPPORT_AE
+extern "C" {
 #  include <ae.h>
+}
 #endif
 
 #include <functional>
@@ -24,6 +26,7 @@ namespace smark::util {
     void SetEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
     void DelEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
     void Wait();
+    void Stop();
 #ifdef SUPPORT_AE
   private:
     aeEventLoop* ae_el_;
