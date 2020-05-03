@@ -24,7 +24,7 @@ namespace smark_tests {
     const int kMaxConns = 20;
     TestServer();
     ~TestServer();
-    void Connect(uint16_t listen_port = SVR_PORT);
+    uint16_t Connect(uint16_t listen_port = SVR_PORT);
     void Run();
 
   private:
