@@ -1,5 +1,3 @@
-[![Actions Status](https://github.com/RobertIndie/smark/workflows/MacOS/badge.svg)](https://github.com/RobertIndie/smark/actions)
-[![Actions Status](https://github.com/RobertIndie/smark/workflows/Windows/badge.svg)](https://github.com/RobertIndie/smark/actions)
 [![Actions Status](https://github.com/RobertIndie/smark/workflows/Ubuntu/badge.svg)](https://github.com/RobertIndie/smark/actions)
 [![Actions Status](https://github.com/RobertIndie/smark/workflows/Style/badge.svg)](https://github.com/RobertIndie/smark/actions)
 [![Actions Status](https://github.com/RobertIndie/smark/workflows/Install/badge.svg)](https://github.com/RobertIndie/smark/actions)
