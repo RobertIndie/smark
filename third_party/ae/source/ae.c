@@ -108,15 +108,13 @@ int aeResizeSetSize(aeEventLoop *eventLoop, int setsize) {
   if (eventLoop->maxfd >= setsize) return AE_ERR;
   if (aeApiResize(eventLoop, setsize) == -1) return AE_ERR;
 
-  eventLoop->events
-      = zrealloc(eventLoop->events, sizeof(aeFileEvent) * setsize);
+  eventLoop->events = zrealloc(eventLoop->events, sizeof(aeFileEvent) * setsize);
   eventLoop->fired = zrealloc(eventLoop->fired, sizeof(aeFiredEvent) * setsize);
   eventLoop->setsize = setsize;
 
   /* Make sure that if we created new slots, they are initialized with
    * an AE_NONE mask. */
-  for (i = eventLoop->maxfd + 1; i < setsize; i++)
-    eventLoop->events[i].mask = AE_NONE;
+  for (i = eventLoop->maxfd + 1; i < setsize; i++) eventLoop->events[i].mask = AE_NONE;
   return AE_OK;
 }
 
@@ -129,8 +127,8 @@ void aeDeleteEventLoop(aeEventLoop *eventLoop) {
 
 void aeStop(aeEventLoop *eventLoop) { eventLoop->stop = 1; }
 
-int aeCreateFileEvent(aeEventLoop *eventLoop, int fd, int mask,
-                      aeFileProc *proc, void *clientData) {
+int aeCreateFileEvent(aeEventLoop *eventLoop, int fd, int mask, aeFileProc *proc,
+                      void *clientData) {
   if (fd >= eventLoop->setsize) {
     errno = ERANGE;
     return AE_ERR;
@@ -178,8 +176,7 @@ static void aeGetTime(long *seconds, long *milliseconds) {
   *milliseconds = tv.tv_usec / 1000;
 }
 
-static void aeAddMillisecondsToNow(long long milliseconds, long *sec,
-                                   long *ms) {
+static void aeAddMillisecondsToNow(long long milliseconds, long *sec, long *ms) {
   long cur_sec, cur_ms, when_sec, when_ms;
 
   aeGetTime(&cur_sec, &cur_ms);
@@ -193,9 +190,8 @@ static void aeAddMillisecondsToNow(long long milliseconds, long *sec,
   *ms = when_ms;
 }
 
-long long aeCreateTimeEvent(aeEventLoop *eventLoop, long long milliseconds,
-                            aeTimeProc *proc, void *clientData,
-                            aeEventFinalizerProc *finalizerProc) {
+long long aeCreateTimeEvent(aeEventLoop *eventLoop, long long milliseconds, aeTimeProc *proc,
+                            void *clientData, aeEventFinalizerProc *finalizerProc) {
   long long id = eventLoop->timeEventNextId++;
   aeTimeEvent *te;
 
@@ -240,8 +236,7 @@ static aeTimeEvent *aeSearchNearestTimer(aeEventLoop *eventLoop) {
 
   while (te) {
     if (!nearest || te->when_sec < nearest->when_sec
-        || (te->when_sec == nearest->when_sec
-            && te->when_ms < nearest->when_ms))
+        || (te->when_sec == nearest->when_sec && te->when_ms < nearest->when_ms))
       nearest = te;
     te = te->next;
   }
@@ -302,8 +297,7 @@ static int processTimeEvents(aeEventLoop *eventLoop) {
       continue;
     }
     aeGetTime(&now_sec, &now_ms);
-    if (now_sec > te->when_sec
-        || (now_sec == te->when_sec && now_ms >= te->when_ms)) {
+    if (now_sec > te->when_sec || (now_sec == te->when_sec && now_ms >= te->when_ms)) {
       int retval;
 
       id = te->id;
@@ -344,8 +338,7 @@ int aeProcessEvents(aeEventLoop *eventLoop, int flags) {
    * file events to process as long as we want to process time
    * events, in order to sleep until the next time event is ready
    * to fire. */
-  if (eventLoop->maxfd != -1
-      || ((flags & AE_TIME_EVENTS) && !(flags & AE_DONT_WAIT))) {
+  if (eventLoop->maxfd != -1 || ((flags & AE_TIME_EVENTS) && !(flags & AE_DONT_WAIT))) {
     int j;
     aeTimeEvent *shortest = NULL;
     struct timeval tv, *tvp;
@@ -360,8 +353,7 @@ int aeProcessEvents(aeEventLoop *eventLoop, int flags) {
 
       /* How many milliseconds we need to wait for the next
        * time event to fire? */
-      long long ms
-          = (shortest->when_sec - now_sec) * 1000 + shortest->when_ms - now_ms;
+      long long ms = (shortest->when_sec - now_sec) * 1000 + shortest->when_ms - now_ms;
 
       if (ms > 0) {
         tvp->tv_sec = ms / 1000;
@@ -442,7 +434,6 @@ void aeMain(aeEventLoop *eventLoop) {
 
 char *aeGetApiName(void) { return aeApiName(); }
 
-void aeSetBeforeSleepProc(aeEventLoop *eventLoop,
-                          aeBeforeSleepProc *beforesleep) {
+void aeSetBeforeSleepProc(aeEventLoop *eventLoop, aeBeforeSleepProc *beforesleep) {
   eventLoop->beforesleep = beforesleep;
 }

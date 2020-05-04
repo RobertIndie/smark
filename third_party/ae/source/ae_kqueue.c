@@ -108,11 +108,9 @@ static int aeApiPoll(aeEventLoop *eventLoop, struct timeval *tvp) {
     struct timespec timeout;
     timeout.tv_sec = tvp->tv_sec;
     timeout.tv_nsec = tvp->tv_usec * 1000;
-    retval = kevent(state->kqfd, NULL, 0, state->events, eventLoop->setsize,
-                    &timeout);
+    retval = kevent(state->kqfd, NULL, 0, state->events, eventLoop->setsize, &timeout);
   } else {
-    retval
-        = kevent(state->kqfd, NULL, 0, state->events, eventLoop->setsize, NULL);
+    retval = kevent(state->kqfd, NULL, 0, state->events, eventLoop->setsize, NULL);
   }
 
   if (retval > 0) {

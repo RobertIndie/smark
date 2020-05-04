@@ -23,4 +23,4 @@ jobs:
       run: cmake -Htest -Bbuild
 
     - name: check style
-      run: cmake --build build --target format 
+      run: cmake --build build --target check-format 
