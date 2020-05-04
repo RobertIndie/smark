@@ -14,10 +14,6 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.")
 endif()
 
-# --- Import tools ----
-
-include(cmake/tools.cmake)
-
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
 
@@ -52,7 +48,7 @@ add_library(Smark ${headers} ${sources})
 
 set_target_properties(Smark PROPERTIES CXX_STANDARD 17)
 
-# beeing a cross-platform target, we enforce enforce standards conformance on MSVC
+# beeing a cross-platform target, we enforce standards conformance on MSVC
 target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
