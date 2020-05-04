@@ -1,6 +1,7 @@
 [![Actions Status](https://github.com/RobertIndie/smark/workflows/Ubuntu/badge.svg)](https://github.com/RobertIndie/smark/actions)
 [![Actions Status](https://github.com/RobertIndie/smark/workflows/Style/badge.svg)](https://github.com/RobertIndie/smark/actions)
 [![Actions Status](https://github.com/RobertIndie/smark/workflows/Install/badge.svg)](https://github.com/RobertIndie/smark/actions)
+[![Actions Status](https://github.com/RobertIndie/smark/workflows/Standalone/badge.svg)](https://github.com/RobertIndie/smark/actions)
 [![codecov](https://codecov.io/gh/RobertIndie/smark/branch/master/graph/badge.svg)](https://codecov.io/gh/RobertIndie/smark)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 

@@ -16,9 +16,16 @@
 
 #include "testsvr.h"
 
+#define INIT_TASK int __task_count = __COUNTER__
+#define SUB_TASK(task) \
+  (void)__COUNTER__;   \
+  task++
+#define END_TASK __task_count = __COUNTER__ - __task_count - 1
+
 using namespace smark_tests;
 TestServer* test_svr = nullptr;
 pthread_t svr_thread;
+uint16_t port = SVR_PORT;
 
 void* _ServerThread(void* arg) {
   auto test_svr = (TestServer*)arg;
@@ -29,7 +36,7 @@ void* _ServerThread(void* arg) {
 void RunServer() {
   if (test_svr == nullptr) {
     test_svr = new TestServer();
-    test_svr->Connect();
+    port = test_svr->Connect(port);
     int ret = pthread_create(&svr_thread, nullptr, &_ServerThread, test_svr);
     if (ret == -1) {
       printf("pthread create fail.");
@@ -41,11 +48,12 @@ using namespace smark;
 TEST_CASE("TCPClient") {
   RunServer();
   int task = 0;
+  INIT_TASK;
 
   TCPClient cli;
   util::EventLoop el(13);
   el.SetEvent(&cli);
-  cli.Connect("127.0.0.1", SVR_PORT);
+  cli.Connect("127.0.0.1", port);
   DLOG("Connected");
   const char data[] = "Hello world";
   cli.writable_event = [&cli, &task, &data](util::EventLoop* el) {
@@ -55,7 +63,7 @@ TEST_CASE("TCPClient") {
   };
   cli.readable_event = [&cli, &task, &data](util::EventLoop* el) {
     (void)el;
-    task++;
+    SUB_TASK(task);
     char buff[1024];
     cli.Recv(buff, sizeof(buff));
     CHECK(strcmp(buff, data) == 0);
@@ -63,7 +71,8 @@ TEST_CASE("TCPClient") {
     cli.readable_event = [](auto) {};
   };
   el.Wait();
-  CHECK(task == 1);
+  END_TASK;
+  CHECK(task == __task_count);
 }
 
 TEST_CASE("BasicBenchmark") {
@@ -72,7 +81,7 @@ TEST_CASE("BasicBenchmark") {
   smark.setting.connection_count = 4;
   smark.setting.thread_count = 2;
   smark.setting.ip = "127.0.0.1";
-  smark.setting.port = SVR_PORT;
+  smark.setting.port = port;
   // smark.setting.timeout_us = -1;
   smark.Run();
   CHECK(smark.status.finish_count == smark.setting.connection_count);

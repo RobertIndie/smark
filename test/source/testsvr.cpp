@@ -20,7 +20,7 @@ namespace smark_tests {
   TestServer::TestServer() {}
   TestServer::~TestServer() {}
 
-  void TestServer::Connect(uint16_t listen_port) {
+  uint16_t TestServer::Connect(uint16_t listen_port) {
     sock_fd_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock_fd_ < 0) {
       throw new std::runtime_error("socket create fail.");
@@ -35,8 +35,10 @@ namespace smark_tests {
     myserver.sin_addr.s_addr = htonl(INADDR_ANY);
     myserver.sin_port = htons(listen_port);
 
-    if (bind(sock_fd_, (sockaddr *)&myserver, sizeof(myserver)) < 0) {
-      ERR("bind fail.");
+    while (bind(sock_fd_, (sockaddr *)&myserver, sizeof(myserver)) < 0) {
+      if (errno != EADDRINUSE) ERR("bind fail.");
+      listen_port++;
+      myserver.sin_port = htons(listen_port);
     }
 
     if (listen(sock_fd_, kMaxConns) < 0) {
@@ -45,6 +47,8 @@ namespace smark_tests {
 
     flags = 1;
     setsockopt(sock_fd_, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
+
+    return listen_port;
   }
   void TestServer::Run() {
     epoll_event ev;
