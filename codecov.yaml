@@ -1,5 +1,6 @@
 ignore:
   - "test"
+  - "third_party"
 
 comment:
   require_changes: true

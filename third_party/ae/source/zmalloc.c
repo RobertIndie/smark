@@ -69,28 +69,25 @@ void zlibc_free(void *ptr) { free(ptr); }
 #  define dallocx(ptr, flags) je_dallocx(ptr, flags)
 #endif
 
-#define update_zmalloc_stat_alloc(__n)                \
-  do {                                                \
-    size_t _n = (__n);                                \
-    if (_n & (sizeof(long) - 1))                      \
-      _n += sizeof(long) - (_n & (sizeof(long) - 1)); \
-    atomicIncr(used_memory, __n);                     \
+#define update_zmalloc_stat_alloc(__n)                                           \
+  do {                                                                           \
+    size_t _n = (__n);                                                           \
+    if (_n & (sizeof(long) - 1)) _n += sizeof(long) - (_n & (sizeof(long) - 1)); \
+    atomicIncr(used_memory, __n);                                                \
   } while (0)
 
-#define update_zmalloc_stat_free(__n)                 \
-  do {                                                \
-    size_t _n = (__n);                                \
-    if (_n & (sizeof(long) - 1))                      \
-      _n += sizeof(long) - (_n & (sizeof(long) - 1)); \
-    atomicDecr(used_memory, __n);                     \
+#define update_zmalloc_stat_free(__n)                                            \
+  do {                                                                           \
+    size_t _n = (__n);                                                           \
+    if (_n & (sizeof(long) - 1)) _n += sizeof(long) - (_n & (sizeof(long) - 1)); \
+    atomicDecr(used_memory, __n);                                                \
   } while (0)
 
 static size_t used_memory = 0;
 pthread_mutex_t used_memory_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void zmalloc_default_oom(size_t size) {
-  fprintf(stderr, "zmalloc: Out of memory trying to allocate %zu bytes\n",
-          size);
+  fprintf(stderr, "zmalloc: Out of memory trying to allocate %zu bytes\n", size);
   fflush(stderr);
   abort();
 }
@@ -181,8 +178,7 @@ size_t zmalloc_size(void *ptr) {
   size_t size = *((size_t *)realptr);
   /* Assume at least that all the allocations are padded at sizeof(long) by
    * the underlying allocator. */
-  if (size & (sizeof(long) - 1))
-    size += sizeof(long) - (size & (sizeof(long) - 1));
+  if (size & (sizeof(long) - 1)) size += sizeof(long) - (size & (sizeof(long) - 1));
   return size + PREFIX_SIZE;
 }
 #endif
@@ -219,9 +215,7 @@ size_t zmalloc_used_memory(void) {
   return um;
 }
 
-void zmalloc_set_oom_handler(void (*oom_handler)(size_t)) {
-  zmalloc_oom_handler = oom_handler;
-}
+void zmalloc_set_oom_handler(void (*oom_handler)(size_t)) { zmalloc_oom_handler = oom_handler; }
 
 /* Get the RSS information in an OS-specific way.
  *
@@ -301,9 +295,7 @@ size_t zmalloc_get_rss(void) {
 #endif
 
 /* Fragmentation = RSS / allocated-bytes */
-float zmalloc_get_fragmentation_ratio(size_t rss) {
-  return (float)rss / zmalloc_used_memory();
-}
+float zmalloc_get_fragmentation_ratio(size_t rss) { return (float)rss / zmalloc_used_memory(); }
 
 /* Get the sum of the specified field (converted form kb to bytes) in
  * /proc/self/smaps. The field must be specified with trailing ":" as it
