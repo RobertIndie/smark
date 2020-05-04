@@ -9,6 +9,10 @@ project(SmarkTests
 option(ENABLE_TEST_COVERAGE "Enable test coverage" OFF)
 option(TEST_INSTALLED_VERSION "Test the version found by find_package" OFF)
 
+# --- Import tools ----
+
+include(../cmake/tools.cmake)
+
 # ---- Dependencies ----
 
 include(../cmake/CPM.cmake)
