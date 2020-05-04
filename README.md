@@ -52,6 +52,18 @@ cmake --build build/test --target format
 cmake --build build/test --target fix-format
 ```
 
+Due to [this issue](https://github.com/TheLartians/Format.cmake/issues/8), for WSL developer:
+
+```bash
+git config core.filemode true
+
+cmake --build build/test --target check-format # format or check-format
+
+git config core.filemode false
+```
+
+Note: This is just a temporary solution for those working on WSL.
+
 See [Format.cmake](https://github.com/TheLartians/Format.cmake) for more options.
 
 ### Additional tools
