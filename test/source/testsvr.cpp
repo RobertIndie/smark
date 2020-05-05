@@ -17,7 +17,9 @@ namespace smark_tests {
     }
   }
 
-  TestServer::TestServer() {}
+  TestServer::TestServer() {
+    on_msg = [this](int fd, const char *data, int len) { this->Send(fd, data, len); };
+  }
   TestServer::~TestServer() {}
 
   uint16_t TestServer::Connect(uint16_t listen_port) {
@@ -110,6 +112,13 @@ namespace smark_tests {
           }
         }
       }
+    }
+  }
+
+  void TestServer::Send(int fd, const char *data, int len) {
+    const char *curr_wr = data;
+    while (curr_wr - data != len) {
+      curr_wr += write(fd, data, len);
     }
   }
 

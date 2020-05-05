@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -26,6 +27,8 @@ namespace smark_tests {
     ~TestServer();
     uint16_t Connect(uint16_t listen_port = SVR_PORT);
     void Run();
+    std::function<void(int fd, const char* data, int len)> on_msg;
+    void Send(int fd, const char* data, int len);
 
   private:
     int sock_fd_;
