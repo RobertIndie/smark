@@ -60,6 +60,7 @@ namespace smark::util {
       std::string value;
     };
     std::vector<Header> headers;
+    std::string body;
     virtual std::string ToString() const = 0;
   };
 
