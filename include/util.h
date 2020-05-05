@@ -52,6 +52,27 @@ namespace smark::util {
     int fd_ = -1;
 #endif
   };
+  class HttpPacket {
+  public:
+    class Header {
+    public:
+      std::string name;
+      std::string value;
+    };
+    std::vector<Header> headers;
+    virtual std::string ToString() const = 0;
+  };
+
+  class HttpRequest : public HttpPacket {
+  public:
+    std::string method;
+    std::string request_uri;
+  };
+
+  class HttpResponse : public HttpPacket {
+  public:
+    std::string status_code;
+  };
   class HttpReponseParser {
   public:
     void Init();
