@@ -125,7 +125,11 @@ namespace smark_tests {
 
   SimpleHttpServer::SimpleHttpServer() {
     this->on_msg = [this](int fd, auto, auto) {
-      char res[] = "HTTP/1.1 200 OK\r\ntest-header: test\r\n\r\n";
+      char res[]
+          = "HTTP/1.1 200 OK\r\n"
+            "test-header: test_value\r\n"
+            "\r\n"
+            "This is a response\r\n";
       this->Send(fd, res, sizeof(res));
     };
   }

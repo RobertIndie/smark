@@ -24,6 +24,7 @@
 
 using namespace smark_tests;
 TestServer* test_svr = nullptr;
+SimpleHttpServer* simple_http_svr = nullptr;
 pthread_t svr_thread;
 uint16_t port = SVR_PORT;
 
@@ -38,6 +39,18 @@ void RunServer() {
     test_svr = new TestServer();
     port = test_svr->Connect(port);
     int ret = pthread_create(&svr_thread, nullptr, &_ServerThread, test_svr);
+    if (ret == -1) {
+      printf("pthread create fail.");
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+void RunSimpleHttpServer() {
+  if (simple_http_svr == nullptr) {
+    simple_http_svr = new SimpleHttpServer();
+    port = simple_http_svr->Connect(port);
+    int ret = pthread_create(&svr_thread, nullptr, &_ServerThread, simple_http_svr);
     if (ret == -1) {
       printf("pthread create fail.");
       exit(EXIT_FAILURE);
@@ -85,6 +98,38 @@ TEST_CASE("BasicBenchmark") {
   // smark.setting.timeout_us = -1;
   smark.Run();
   CHECK(smark.status.finish_count == smark.setting.connection_count);
+}
+
+TEST_CASE("HttpClient") {
+  RunSimpleHttpServer();
+  INIT_TASK;
+  int task = 0;
+  auto req = std::make_shared<util::HttpRequest>();
+  req->method = "Get";
+  req->request_uri = "/test";
+  util::HttpPacket::Header test_header;
+  test_header.name = "test-header";
+  test_header.value = "test_value";
+  req->headers.push_back(test_header);
+  req->body = "This is a request";
+
+  HttpClient cli;
+  util::EventLoop el(13);
+  el.SetEvent(&cli);
+  cli.on_response = [&task](auto, std::shared_ptr<util::HttpResponse> res) {
+    SUB_TASK(task);
+    CHECK(res->status_code == "200");
+    int header_count = res->headers.size();
+    CHECK(header_count == 1);
+    auto test_header = res->headers[0];
+    CHECK(test_header.name == "test-header");
+    CHECK(test_header.value = "test_value");
+    CHECK(res->body == "This is a response");
+  };
+
+  el.Wait();
+  END_TASK;
+  CHECK(task == __task_count);
 }
 
 TEST_CASE("Smark") {
