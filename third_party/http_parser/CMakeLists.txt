@@ -2,10 +2,9 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 # ---- Project ----
 
-# Note: update this to your new project's name and version
-project(Smark 
+project(HttpParser 
   VERSION 1.0
-  LANGUAGES CXX
+  LANGUAGES C
 )
 
 # ---- Include guards ----
@@ -14,10 +13,14 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.")
 endif()
 
+# --- Import tools ----
+
+include(../../cmake/tools.cmake)
+
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
 
-include(cmake/CPM.cmake)
+include(../../cmake/CPM.cmake)
 
 # PackageProject.cmake will be used to make our target installable
 CPMAddPackage(
@@ -26,22 +29,12 @@ CPMAddPackage(
   VERSION 1.2
 )
 
-CPMAddPackage(
-  NAME ae
-  SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party/ae/
-)
-
-CPMAddPackage(
-  NAME HttpParser
-  SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party/http_parser/
-)
-
 # ---- Add source files ----
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files automatically.
 # Keep that in mind when changing files, or explicitly mention them here.
-FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
-FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
+FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/http_parser.h")
+FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/http_parser.c")
 
 # ---- Create library ----
 
@@ -49,18 +42,17 @@ FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/
 # add_library(Smark INTERFACE)  
 # set_target_properties(Smark PROPERTIES INTERFACE_COMPILE_FEATURES cxx_std_17)
 
-add_library(Smark ${headers} ${sources})
+add_library(HttpParser ${headers} ${sources})
 
-set_target_properties(Smark PROPERTIES CXX_STANDARD 17)
+set_target_properties(HttpParser PROPERTIES C_STANDARD 11)
 
 # beeing a cross-platform target, we enforce standards conformance on MSVC
-target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
+target_compile_options(HttpParser PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC ae pthread)
 
-target_include_directories(Smark
+target_include_directories(HttpParser
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
@@ -75,5 +67,5 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "ae" "HttpParser"
+  DEPENDENCIES ""
 )
