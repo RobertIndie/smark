@@ -1,6 +1,7 @@
 ignore:
   - "test"
   - "third_party"
+  - "source/util.cpp"
 
 comment:
   require_changes: true
