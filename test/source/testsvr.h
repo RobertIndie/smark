@@ -33,4 +33,9 @@ namespace smark_tests {
   private:
     int sock_fd_;
   };
+
+  class SimpleHttpServer : public TestServer {
+  public:
+    SimpleHttpServer();
+  };
 }  // namespace smark_tests

@@ -107,8 +107,9 @@ namespace smark_tests {
 #endif
           }
           if (rsize > 0) {
-            int curr_w = 0;
-            while (curr_w != rsize) curr_w += write(fd, buffer, rsize);
+            // int curr_w = 0;
+            // while (curr_w != rsize) curr_w += write(fd, buffer, rsize);
+            on_msg(fd, buffer, rsize);
           }
         }
       }
@@ -120,6 +121,13 @@ namespace smark_tests {
     while (curr_wr - data != len) {
       curr_wr += write(fd, data, len);
     }
+  }
+
+  SimpleHttpServer::SimpleHttpServer() {
+    this->on_msg = [this](int fd, auto, auto) {
+      char res[] = "HTTP/1.1 200 OK\r\ntest-header: test\r\n\r\n";
+      this->Send(fd, res, sizeof(res));
+    };
   }
 
 }  // namespace smark_tests
