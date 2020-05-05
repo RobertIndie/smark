@@ -14,6 +14,7 @@ extern "C" {
 
 #include <functional>
 #include <map>
+#include <memory>
 
 namespace smark::util {
   class EventLoop;
@@ -50,5 +51,11 @@ namespace smark::util {
   private:
     int fd_ = -1;
 #endif
+  };
+  class HttpReponseParser {
+  public:
+    void Init();
+    void Feed(const char* data, size_t len);
+    std::function<void(std::shared_ptr<HttpResponse>)> on_complete;
   };
 }  // namespace smark::util
