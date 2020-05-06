@@ -107,9 +107,9 @@ TEST_CASE("HttpClient") {
   auto req = std::make_shared<util::HttpRequest>();
   req->method = "Get";
   req->request_uri = "/test";
-  util::HttpPacket::Header test_header;
-  test_header.name = "test-header";
-  test_header.value = "test_value";
+  auto test_header = std::make_shared<util::HttpPacket::Header>();
+  test_header->name = "test-header";
+  test_header->value = "test_value";
   req->headers.push_back(test_header);
   req->body = "This is a request";
 
@@ -122,8 +122,8 @@ TEST_CASE("HttpClient") {
     int header_count = res->headers.size();
     CHECK(header_count == 1);
     auto test_header = res->headers[0];
-    CHECK(test_header.name == "test-header");
-    CHECK(test_header.value = "test_value");
+    CHECK(test_header->name == "test-header");
+    CHECK(test_header->value = "test_value");
     CHECK(res->body == "This is a response");
   };
 

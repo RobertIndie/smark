@@ -88,7 +88,7 @@ namespace smark::util {
     }
   }
 
-  int Socket::Write(const char *data, int len) {
+  size_t Socket::Write(const char *data, int len) {
     auto ret = write(fd_, data, len);
     if (ret == -1) {
       ERR("Write err");
@@ -96,7 +96,7 @@ namespace smark::util {
     return ret;
   }
 
-  int Socket::Read(char *buff, int len) {
+  size_t Socket::Read(char *buff, int len) {
     auto ret = read(fd_, buff, len);
     if (ret == -1) {
       ERR("Read err.");
@@ -105,4 +105,63 @@ namespace smark::util {
   }
 
   int Socket::GetFD() const { return fd_; }
+
+  std::string HttpRequest::ToString() {
+    std::ostringstream oss;
+    oss << method << " " << request_uri << " "
+        << "HTTP/1.1"
+        << "\r\n";
+    for (auto iter = headers.begin(); iter != headers.end(); iter++) {
+      oss << (**iter).name << ": " << (**iter).value << "\r\n";
+    }
+    oss << "\r\n";
+    if (!body.empty()) oss << body << "\r\n";
+    return oss.str();
+  }
+
+  std::string HttpResponse::ToString() {
+    ERR("do not implement.");  // TODO
+  }
+
+  void HttpReponseParser::Init() {
+    parser_ = std::make_shared<http_parser>();
+    http_parser_init(parser_.get(), HTTP_RESPONSE);
+    parser_->data = this;
+
+    settings_.on_status = OnStatus;
+  }
+
+  int OnMessageBegin(http_parser *p) {
+    auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
+    parser->res_ = std::make_shared<HttpResponse>();
+  }
+  int OnStatus(http_parser *p, const char *at, size_t length) {
+    auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
+    std::string(at, length);
+    parser->res_->status_code = at;
+  }
+  int OnHeaderField(http_parser *p, const char *at, size_t length) {
+    auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
+    auto new_header = std::make_shared<HttpPacket::Header>();
+    new_header->name = std::string(at, length);
+    parser->res_->headers.push_back(new_header);
+  }
+  int OnHeaderValue(http_parser *p, const char *at, size_t length) {
+    auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
+    auto header = parser->res_->headers.back();
+    header->value = std::string(at, length);
+  }
+  int OnBody(http_parser *p, const char *at, size_t length) {
+    auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
+    parser->res_->body = std::string(at, length);
+  }
+  int OnMessageComplete(http_parser *p) {
+    auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
+    parser->on_complete(parser->res_);
+  }
+
+  void HttpReponseParser::Feed(const char *data, size_t len) {
+    int nparsed = http_parser_execute(parser_.get(), nullptr, data, len);
+    if (nparsed != len) ERR("http_parser_execute error." << LOG_VALUE(parser_->http_errno));
+  }
 }  // namespace smark::util
