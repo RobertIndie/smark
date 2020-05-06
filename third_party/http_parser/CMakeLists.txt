@@ -54,7 +54,7 @@ target_compile_options(HttpParser PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 target_include_directories(HttpParser
   PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
 )
 
