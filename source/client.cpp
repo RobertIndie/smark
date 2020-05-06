@@ -40,4 +40,6 @@ namespace smark {
   void HttpClient::Request(std::shared_ptr<util::HttpRequest> request) {
     request_queue_.push(request);
   }
+
+  int HttpClient::GetFD() const { return cli_.GetFD(); }
 }  // namespace smark

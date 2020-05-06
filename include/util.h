@@ -70,13 +70,13 @@ namespace smark::util {
   public:
     std::string method;
     std::string request_uri;
-    virtual std::string ToString();
+    virtual std::string ToString() const;
   };
 
   class HttpResponse : public HttpPacket {
   public:
     std::string status_code;
-    virtual std::string ToString();
+    virtual std::string ToString() const;
   };
 
   int OnMessageBegin(http_parser* p);

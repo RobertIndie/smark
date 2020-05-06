@@ -114,7 +114,7 @@ TEST_CASE("HttpClient") {
   req->body = "This is a request";
 
   HttpClient cli;
-  util::EventLoop el(13);
+  util::EventLoop el(1024);
   el.SetEvent(&cli);
   cli.on_response = [&task](auto, std::shared_ptr<util::HttpResponse> res) {
     SUB_TASK(task);
@@ -123,7 +123,7 @@ TEST_CASE("HttpClient") {
     CHECK(header_count == 1);
     auto test_header = res->headers[0];
     CHECK(test_header->name == "test-header");
-    CHECK(test_header->value = "test_value");
+    CHECK(test_header->value == "test_value");
     CHECK(res->body == "This is a response");
   };
 

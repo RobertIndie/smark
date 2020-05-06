@@ -106,7 +106,7 @@ namespace smark::util {
 
   int Socket::GetFD() const { return fd_; }
 
-  std::string HttpRequest::ToString() {
+  std::string HttpRequest::ToString() const {
     std::ostringstream oss;
     oss << method << " " << request_uri << " "
         << "HTTP/1.1"
@@ -119,7 +119,7 @@ namespace smark::util {
     return oss.str();
   }
 
-  std::string HttpResponse::ToString() {
+  std::string HttpResponse::ToString() const {
     ERR("do not implement.");  // TODO
   }
 
@@ -134,34 +134,40 @@ namespace smark::util {
   int OnMessageBegin(http_parser *p) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
     parser->res_ = std::make_shared<HttpResponse>();
+    return 0;
   }
   int OnStatus(http_parser *p, const char *at, size_t length) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
     std::string(at, length);
     parser->res_->status_code = at;
+    return 0;
   }
   int OnHeaderField(http_parser *p, const char *at, size_t length) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
     auto new_header = std::make_shared<HttpPacket::Header>();
     new_header->name = std::string(at, length);
     parser->res_->headers.push_back(new_header);
+    return 0;
   }
   int OnHeaderValue(http_parser *p, const char *at, size_t length) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
     auto header = parser->res_->headers.back();
     header->value = std::string(at, length);
+    return 0;
   }
   int OnBody(http_parser *p, const char *at, size_t length) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
     parser->res_->body = std::string(at, length);
+    return 0;
   }
   int OnMessageComplete(http_parser *p) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
     parser->on_complete(parser->res_);
+    return 0;
   }
 
   void HttpReponseParser::Feed(const char *data, size_t len) {
-    int nparsed = http_parser_execute(parser_.get(), nullptr, data, len);
+    size_t nparsed = http_parser_execute(parser_.get(), nullptr, data, len);
     if (nparsed != len) ERR("http_parser_execute error." << LOG_VALUE(parser_->http_errno));
   }
 }  // namespace smark::util
