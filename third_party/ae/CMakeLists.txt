@@ -7,6 +7,8 @@ project(ae
   LANGUAGES C
 )
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g")
+
 # ---- Include guards ----
 
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
