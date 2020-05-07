@@ -128,7 +128,12 @@ namespace smark::util {
     http_parser_init(parser_.get(), HTTP_RESPONSE);
     parser_->data = this;
 
+    settings_.on_message_begin = OnMessageBegin;
     settings_.on_status = OnStatus;
+    settings_.on_header_field = OnHeaderField;
+    settings_.on_header_value = OnHeaderValue;
+    settings_.on_body = OnBody;
+    settings_.on_message_complete = OnMessageComplete;
   }
 
   int OnMessageBegin(http_parser *p) {
@@ -138,8 +143,7 @@ namespace smark::util {
   }
   int OnStatus(http_parser *p, const char *at, size_t length) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
-    std::string(at, length);
-    parser->res_->status_code = at;
+    parser->res_->status_code = std::string(at, length);
     return 0;
   }
   int OnHeaderField(http_parser *p, const char *at, size_t length) {
@@ -167,7 +171,7 @@ namespace smark::util {
   }
 
   void HttpReponseParser::Feed(const char *data, size_t len) {
-    size_t nparsed = http_parser_execute(parser_.get(), nullptr, data, len);
+    size_t nparsed = http_parser_execute(parser_.get(), &settings_, data, len);
     if (nparsed != len) ERR("http_parser_execute error." << LOG_VALUE(parser_->http_errno));
   }
 }  // namespace smark::util

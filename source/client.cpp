@@ -22,12 +22,14 @@ namespace smark {
         auto req = this->request_queue_.front();
         auto data = req->ToString();
         this->cli_.Send(data.c_str(), data.length());
+        request_queue_.pop();
       }
     };
     readable_event = [this](auto) {
       char buffer[1024];
       int recved = this->cli_.Recv(buffer, sizeof(buffer));
       parser_.Feed(buffer, recved);
+      if (recved != 0 && buffer[recved - 1] == '\0') parser_.Feed(buffer, 0);  // end of response
     };
     parser_.on_complete = [this](std::shared_ptr<util::HttpResponse> res) {
       if (this->on_response) this->on_response(this, res);

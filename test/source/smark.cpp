@@ -22,6 +22,10 @@
   task++
 #define END_TASK __task_count = __COUNTER__ - __task_count - 1
 
+// do not use '==' to compare string
+// do not use string.compare: fail on "This is a response"
+#define STR_COMPARE(str, value) strcmp(str.c_str(), value) == 0
+
 using namespace smark_tests;
 TestServer* test_svr = nullptr;
 SimpleHttpServer* simple_http_svr = nullptr;
@@ -117,16 +121,19 @@ TEST_CASE("HttpClient") {
   HttpClient cli;
   util::EventLoop el(1024);
   el.SetEvent(&cli);
-  cli.on_response = [&task](auto, std::shared_ptr<util::HttpResponse> res) {
+  cli.on_response = [&task, &el, &cli](auto, std::shared_ptr<util::HttpResponse> res) {
     SUB_TASK(task);
-    CHECK(res->status_code == "200");
+    CHECK(STR_COMPARE(res->status_code, "OK"));
     int header_count = res->headers.size();
     CHECK(header_count == 1);
     auto test_header = res->headers[0];
-    CHECK(test_header->name == "test-header");
-    CHECK(test_header->value == "test_value");
-    CHECK(res->body == "This is a response");
+    CHECK(STR_COMPARE(test_header->name, "test-header"));
+    CHECK(STR_COMPARE(test_header->value, "test_value"));
+    CHECK(STR_COMPARE(res->body, "This is a response"));
+    el.Stop();
   };
+  cli.Connect("127.0.0.1", simple_http_port);
+  cli.Request(req);
 
   el.Wait();
   END_TASK;

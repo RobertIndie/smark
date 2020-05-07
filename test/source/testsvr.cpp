@@ -129,7 +129,7 @@ namespace smark_tests {
           = "HTTP/1.1 200 OK\r\n"
             "test-header: test_value\r\n"
             "\r\n"
-            "This is a response\r\n";
+            "This is a response";
       this->Send(fd, res, sizeof(res));
     };
   }
