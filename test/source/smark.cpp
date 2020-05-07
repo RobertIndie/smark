@@ -27,6 +27,7 @@ TestServer* test_svr = nullptr;
 SimpleHttpServer* simple_http_svr = nullptr;
 pthread_t svr_thread;
 uint16_t port = SVR_PORT;
+uint16_t simple_http_port = SVR_PORT;
 
 void* _ServerThread(void* arg) {
   auto test_svr = (TestServer*)arg;
@@ -49,7 +50,7 @@ void RunServer() {
 void RunSimpleHttpServer() {
   if (simple_http_svr == nullptr) {
     simple_http_svr = new SimpleHttpServer();
-    port = simple_http_svr->Connect(port);
+    simple_http_port = simple_http_svr->Connect(port);
     int ret = pthread_create(&svr_thread, nullptr, &_ServerThread, simple_http_svr);
     if (ret == -1) {
       printf("pthread create fail.");
