@@ -12,7 +12,9 @@ extern "C" {
 #  include <pthread.h>
 #endif
 
+extern "C" {
 #include <http_parser.h>
+}
 
 #include <functional>
 #include <map>
