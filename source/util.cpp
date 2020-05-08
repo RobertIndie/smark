@@ -128,6 +128,7 @@ namespace smark::util {
     http_parser_init(parser_.get(), HTTP_RESPONSE);
     parser_->data = this;
 
+    http_parser_settings_init(&settings_);
     settings_.on_message_begin = OnMessageBegin;
     settings_.on_status = OnStatus;
     settings_.on_header_field = OnHeaderField;
