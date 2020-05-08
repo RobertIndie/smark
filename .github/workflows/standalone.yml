@@ -15,6 +15,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+
+    - name: pull submodule
+      run: git submodule update --init --recursive
     
     - name: configure
       run: cmake -Hstandalone -Bbuild

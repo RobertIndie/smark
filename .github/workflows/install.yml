@@ -18,6 +18,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+
+    - name: pull submodule
+      run: git submodule update --init --recursive
     
     - name: build and install library
       run: |

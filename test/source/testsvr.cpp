@@ -17,7 +17,9 @@ namespace smark_tests {
     }
   }
 
-  TestServer::TestServer() {}
+  TestServer::TestServer() {
+    on_msg = [this](int fd, const char *data, int len) { this->Send(fd, data, len); };
+  }
   TestServer::~TestServer() {}
 
   uint16_t TestServer::Connect(uint16_t listen_port) {
@@ -105,12 +107,31 @@ namespace smark_tests {
 #endif
           }
           if (rsize > 0) {
-            int curr_w = 0;
-            while (curr_w != rsize) curr_w += write(fd, buffer, rsize);
+            // int curr_w = 0;
+            // while (curr_w != rsize) curr_w += write(fd, buffer, rsize);
+            on_msg(fd, buffer, rsize);
           }
         }
       }
     }
+  }
+
+  void TestServer::Send(int fd, const char *data, int len) {
+    const char *curr_wr = data;
+    while (curr_wr - data != len) {
+      curr_wr += write(fd, data, len);
+    }
+  }
+
+  SimpleHttpServer::SimpleHttpServer() {
+    this->on_msg = [this](int fd, auto, auto) {
+      char res[]
+          = "HTTP/1.1 200 OK\r\n"
+            "test-header: test_value\r\n"
+            "\r\n"
+            "This is a response";
+      this->Send(fd, res, sizeof(res));
+    };
   }
 
 }  // namespace smark_tests

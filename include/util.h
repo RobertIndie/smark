@@ -12,8 +12,13 @@ extern "C" {
 #  include <pthread.h>
 #endif
 
+extern "C" {
+#include <http_parser.h>
+}
+
 #include <functional>
 #include <map>
+#include <memory>
 
 namespace smark::util {
   class EventLoop;
@@ -43,12 +48,62 @@ namespace smark::util {
   public:
     Socket();
     void Connect(std::string ip, int16_t port);
-    int Write(const char* data, int len);
-    int Read(char* buff, int len);
+    size_t Write(const char* data, int len);
+    size_t Read(char* buff, int len);
+    void Close();
     int GetFD() const;
 #ifdef SUPPORT_AE
   private:
     int fd_ = -1;
 #endif
+  };
+  class HttpPacket {
+  public:
+    class Header {
+    public:
+      std::string name;
+      std::string value;
+    };
+    std::vector<std::shared_ptr<Header>> headers;
+    std::string body;
+    virtual std::string ToString() const = 0;
+  };
+
+  class HttpRequest : public HttpPacket {
+  public:
+    std::string method;
+    std::string request_uri;
+    virtual std::string ToString() const;
+  };
+
+  class HttpResponse : public HttpPacket {
+  public:
+    std::string status_code;
+    virtual std::string ToString() const;
+  };
+
+  int OnMessageBegin(http_parser* p);
+  int OnStatus(http_parser* p, const char* at, size_t length);
+  int OnHeaderField(http_parser* p, const char* at, size_t length);
+  int OnHeaderValue(http_parser* p, const char* at, size_t length);
+  int OnBody(http_parser* p, const char* at, size_t length);
+  int OnMessageComplete(http_parser* p);
+
+  class HttpReponseParser {
+  public:
+    void Init();
+    void Feed(const char* data, size_t len);
+    std::function<void(std::shared_ptr<HttpResponse>)> on_complete;
+
+  private:
+    std::shared_ptr<http_parser> parser_;
+    std::shared_ptr<HttpResponse> res_;
+    http_parser_settings settings_;
+    friend int OnMessageBegin(http_parser* p);
+    friend int OnStatus(http_parser* p, const char* at, size_t length);
+    friend int OnHeaderField(http_parser* p, const char* at, size_t length);
+    friend int OnHeaderValue(http_parser* p, const char* at, size_t length);
+    friend int OnBody(http_parser* p, const char* at, size_t length);
+    friend int OnMessageComplete(http_parser* p);
   };
 }  // namespace smark::util

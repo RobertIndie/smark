@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 # ---- Project ----
 
-project(ae 
+project(HttpParser 
   VERSION 1.0
   LANGUAGES C
 )
@@ -35,9 +35,8 @@ CPMAddPackage(
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files automatically.
 # Keep that in mind when changing files, or explicitly mention them here.
-FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
-FILE(GLOB_RECURSE ae CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/ae.c")
-FILE(GLOB_RECURSE zmalloc CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/zmalloc.c")
+FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/http_parser.h")
+FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/http_parser.c")
 
 # ---- Create library ----
 
@@ -45,19 +44,19 @@ FILE(GLOB_RECURSE zmalloc CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/
 # add_library(Smark INTERFACE)  
 # set_target_properties(Smark PROPERTIES INTERFACE_COMPILE_FEATURES cxx_std_17)
 
-add_library(ae ${headers} ${ae} ${zmalloc})
+add_library(HttpParser ${headers} ${sources})
 
-set_target_properties(ae PROPERTIES C_STANDARD 11)
+set_target_properties(HttpParser PROPERTIES C_STANDARD 11)
 
 # beeing a cross-platform target, we enforce standards conformance on MSVC
-target_compile_options(ae PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
+target_compile_options(HttpParser PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
 
-target_include_directories(ae
+target_include_directories(HttpParser
   PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
 )
 
@@ -68,7 +67,7 @@ packageProject(
   NAME ${PROJECT_NAME}
   VERSION ${PROJECT_VERSION}
   BINARY_DIR ${PROJECT_BINARY_DIR}
-  INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+  INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
   DEPENDENCIES ""
 )
