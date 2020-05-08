@@ -91,7 +91,7 @@ namespace smark::util {
   size_t Socket::Write(const char *data, int len) {
     auto ret = write(fd_, data, len);
     if (ret == -1) {
-      ERR("Write err");
+      ERR("Write err.");
     }
     return ret;
   }
@@ -105,6 +105,13 @@ namespace smark::util {
   }
 
   int Socket::GetFD() const { return fd_; }
+
+  void Socket::Close() {
+    auto ret = close(fd_);
+    if (ret == -1) {
+      ERR("Close err.");
+    }
+  }
 
   std::string HttpRequest::ToString() const {
     std::ostringstream oss;

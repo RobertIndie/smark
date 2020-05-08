@@ -26,6 +26,8 @@
 // do not use string.compare: fail on "This is a response"
 #define STR_COMPARE(str, value) strcmp(str.c_str(), value) == 0
 
+#define MAX_EVENT 1024
+
 using namespace smark_tests;
 TestServer* test_svr = nullptr;
 SimpleHttpServer* simple_http_svr = nullptr;
@@ -69,7 +71,7 @@ TEST_CASE("TCPClient") {
   INIT_TASK;
 
   TCPClient cli;
-  util::EventLoop el(13);
+  util::EventLoop el(MAX_EVENT);
   el.SetEvent(&cli);
   cli.Connect("127.0.0.1", port);
   DLOG("Connected");
@@ -89,17 +91,18 @@ TEST_CASE("TCPClient") {
     cli.readable_event = [](auto) {};
   };
   el.Wait();
+  cli.Close();
   END_TASK;
   CHECK(task == __task_count);
 }
 
 TEST_CASE("BasicBenchmark") {
-  RunServer();
+  RunSimpleHttpServer();
   Smark smark;
   smark.setting.connection_count = 4;
   smark.setting.thread_count = 2;
   smark.setting.ip = "127.0.0.1";
-  smark.setting.port = port;
+  smark.setting.port = simple_http_port;
   // smark.setting.timeout_us = -1;
   smark.Run();
   CHECK(smark.status.finish_count == smark.setting.connection_count);
@@ -119,7 +122,7 @@ TEST_CASE("HttpClient") {
   req->body = "This is a request";
 
   HttpClient cli;
-  util::EventLoop el(1024);
+  util::EventLoop el(MAX_EVENT);
   el.SetEvent(&cli);
   cli.on_response = [&task, &el, &cli](auto, std::shared_ptr<util::HttpResponse> res) {
     SUB_TASK(task);
@@ -136,6 +139,7 @@ TEST_CASE("HttpClient") {
   cli.Request(req);
 
   el.Wait();
+  cli.Close();
   END_TASK;
   CHECK(task == __task_count);
 }

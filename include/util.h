@@ -50,6 +50,7 @@ namespace smark::util {
     void Connect(std::string ip, int16_t port);
     size_t Write(const char* data, int len);
     size_t Read(char* buff, int len);
+    void Close();
     int GetFD() const;
 #ifdef SUPPORT_AE
   private:

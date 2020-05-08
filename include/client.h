@@ -14,6 +14,7 @@ namespace smark {
     void Send(const char* data, int len);
     size_t Recv(char* buff, int len);
     virtual int GetFD() const;
+    void Close();
 
   private:
     smark::util::Socket socket_;
@@ -26,6 +27,7 @@ namespace smark {
     void Request(std::shared_ptr<util::HttpRequest> request);
     std::function<void(HttpClient*, std::shared_ptr<util::HttpResponse>)> on_response;
     virtual int GetFD() const;
+    void Close();
 
   private:
     TCPClient cli_;

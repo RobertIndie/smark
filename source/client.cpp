@@ -16,6 +16,8 @@ namespace smark {
 
   int TCPClient::GetFD() const { return socket_.GetFD(); }
 
+  void TCPClient::Close() { socket_.Close(); }
+
   HttpClient::HttpClient() {
     writable_event = [this](auto) {
       if (!this->request_queue_.empty()) {
@@ -44,4 +46,6 @@ namespace smark {
   }
 
   int HttpClient::GetFD() const { return cli_.GetFD(); }
+
+  void HttpClient::Close() { cli_.Close(); }
 }  // namespace smark
