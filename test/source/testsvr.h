@@ -7,12 +7,15 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+extern "C" {
+#include <uv.h>
+}
+
 #include <cstring>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-
 #if defined(__linux__)
 #  include <linux/version.h>
 #endif
@@ -27,11 +30,12 @@ namespace smark_tests {
     ~TestServer();
     uint16_t Connect(uint16_t listen_port = SVR_PORT);
     void Run();
-    std::function<void(int fd, const char* data, int len)> on_msg;
-    void Send(int fd, const char* data, int len);
+    std::function<void(uv_stream_t* client, const char* data, int len)> on_msg;
+    void Send(uv_stream_t* client, char* data, int len);
 
-  private:
     int sock_fd_;
+    uv_loop_t* loop;
+    uv_tcp_t server;
   };
 
   class SimpleHttpServer : public TestServer {

@@ -134,12 +134,16 @@ TEST_CASE("HttpClient") {
     CHECK(STR_COMPARE(test_header->value, "test_value"));
     CHECK(STR_COMPARE(res->body, "This is a response"));
     el.Stop();
+    // cli.writable_event = [&cli](util::EventLoop* el) { write(cli.GetFD(), "\4", 1); };
+    // cli.readable_event = [](util::EventLoop* el) { el->Stop(); }
   };
   cli.Connect("127.0.0.1", simple_http_port);
   cli.Request(req);
 
   el.Wait();
+  // write(cli.GetFD(), "\4", 1);
   cli.Close();
+  uv_stop(simple_http_svr->loop);
   END_TASK;
   CHECK(task == __task_count);
 }
