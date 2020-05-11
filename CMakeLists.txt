@@ -36,6 +36,21 @@ CPMAddPackage(
   SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party/http_parser/
 )
 
+CPMAddPackage(
+  NAME uv_a
+  GITHUB_REPOSITORY libuv/libuv
+  VERSION 1.37.0
+)
+
+packageProject(
+  NAME uv_a
+  VERSION ${PROJECT_VERSION}
+  BINARY_DIR ${uv_a_BINARY_DIR}
+  INCLUDE_DIR ${uv_a_SOURCE_DIR}/include
+  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+  DEPENDENCIES 
+)
+
 # ---- Add source files ----
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files automatically.
@@ -58,7 +73,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC ae HttpParser pthread)
+target_link_libraries(Smark PUBLIC uv_a ae HttpParser pthread)
 
 target_include_directories(Smark
   PUBLIC
@@ -75,5 +90,5 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "ae" "HttpParser"
+  DEPENDENCIES "uv_a" "ae" "HttpParser"
 )

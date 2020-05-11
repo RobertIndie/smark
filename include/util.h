@@ -16,6 +16,8 @@ extern "C" {
 #include <http_parser.h>
 }
 
+#include <uv.h>
+
 #include <functional>
 #include <map>
 #include <memory>
