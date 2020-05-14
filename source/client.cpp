@@ -1,5 +1,7 @@
 #include "client.h"
 
+#include "debug.h"
+
 namespace smark {
   TCPClient::TCPClient() {}
 
@@ -39,7 +41,10 @@ namespace smark {
     parser_.Init();
   }
 
-  void HttpClient::Connect(std::string ip, int16_t port) { cli_.Connect(ip, port); }
+  void HttpClient::Connect(std::string ip, int16_t port) {
+    cli_.Connect(ip, port);
+    DLOG("HttpClient connect to: " << LOG_VALUE(ip) << LOG_VALUE(port));
+  }
 
   void HttpClient::Request(std::shared_ptr<util::HttpRequest> request) {
     request_queue_.push(request);

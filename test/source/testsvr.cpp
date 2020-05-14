@@ -66,6 +66,7 @@ namespace smark_tests {
   }
 
   void on_new_connection(uv_stream_t *server, int status) {
+    DLOG("New connection");
     auto test_svr = reinterpret_cast<TestServer *>(server->data);
 
     if (status < 0) {
@@ -128,7 +129,7 @@ namespace smark_tests {
 
     // flags = 1;
     // setsockopt(sock_fd_, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
-
+    this->port = listen_port;
     return listen_port;
   }
   void TestServer::Run() {
@@ -212,7 +213,7 @@ namespace smark_tests {
           = "HTTP/1.1 200 OK\r\n"
             "test-header: test_value\r\n"
             "\r\n"
-            "This is a response\0";
+            "This is a response";
       char *data = (char *)malloc(sizeof(res));
       memcpy(data, res, sizeof(res));
       this->Send(cli, data, sizeof(res));

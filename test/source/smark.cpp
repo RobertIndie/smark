@@ -60,6 +60,7 @@ TEST_CASE("TCPClient") {
   auto svr = new TestServer();
   pthread_t thread;
   uint16_t port = RunServer(svr, &thread);
+  DLOG("Run TCP server on port:" << port);
   int task = 0;
   INIT_TASK;
 
@@ -90,12 +91,14 @@ TEST_CASE("TCPClient") {
 }
 
 TEST_CASE("BasicBenchmark") {
+  DLOG("Test: BasicBenchmark");
   auto svr = new SimpleHttpServer();
   pthread_t thread;
   uint16_t port = RunServer(svr, &thread);
+  DLOG("Run Http server on port:" << port);
   Smark smark;
   smark.setting.connection_count = 4;
-  smark.setting.thread_count = 2;
+  smark.setting.thread_count = 4;
   smark.setting.ip = "127.0.0.1";
   smark.setting.port = port;
   // smark.setting.timeout_us = -1;
@@ -107,6 +110,7 @@ TEST_CASE("HttpClient") {
   auto svr = new SimpleHttpServer();
   pthread_t thread;
   uint16_t port = RunServer(svr, &thread);
+  DLOG("Run Http server on port:" << port);
   INIT_TASK;
   int task = 0;
   auto req = std::make_shared<util::HttpRequest>();
@@ -138,7 +142,7 @@ TEST_CASE("HttpClient") {
   cli.Request(req);
 
   el.Wait();
-  cli.Close();
+  // cli.Close();
   END_TASK;
   CHECK(task == __task_count);
 }

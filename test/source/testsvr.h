@@ -34,6 +34,7 @@ namespace smark_tests {
     void Send(uv_stream_t* client, char* data, int len);
 
     int sock_fd_;
+    uint16_t port;
     uv_loop_t* loop;
     uv_tcp_t server;
   };

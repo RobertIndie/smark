@@ -45,7 +45,7 @@ namespace smark {
         for (uint i = 0; i < conn_per_thread; i++) {
           auto clip = std::make_shared<HttpClient>();
           clients.push_back(clip);
-          clip->Request(req);
+
           status.request_count++;  // TODO: move to request callback
           {
             std::lock_guard<std::mutex> guard(status_mutex_);
@@ -61,6 +61,7 @@ namespace smark {
             this->status.finish_count++;
           };
           clip->Connect(this->setting.ip, this->setting.port);
+          clip->Request(req);
           el.SetEvent(clip.get());
         }
         el.Wait();
