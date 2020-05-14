@@ -174,7 +174,11 @@ namespace smark::util {
   }
   int OnMessageComplete(http_parser *p) {
     auto parser = reinterpret_cast<HttpReponseParser *>(p->data);
-    parser->on_complete(parser->res_);
+    try {
+      parser->on_complete(parser->res_);
+    } catch (std::string e) {
+      DLOG("parser->on_complete throw error: " << e);
+    }
     return 0;
   }
 

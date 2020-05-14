@@ -45,19 +45,15 @@ namespace smark_tests {
   void on_close(uv_handle_t *handle) { free(handle); }
   void echo_write(uv_write_t *req, int status) {
     if (status) {
-      ERR("Write error: " << uv_strerror(status));
+      // ERR("Write error: " << uv_strerror(status));
     }
     free_write_req(req);
   }
 
   void on_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     auto test_svr = reinterpret_cast<TestServer *>(client->data);
-    for (int i = buf->len - 1; i >= 0; i--)
-      if (buf->base[i] == 4) {  // 4 denote: End of transimission
-        uv_stop(test_svr->loop);
-      }
     if (nread > 0) {
-      test_svr->on_msg((uv_stream_t *)client, buf->base, buf->len);
+      test_svr->on_msg((uv_stream_t *)client, buf->base, nread);
       free(buf->base);
       return;
     }
@@ -103,8 +99,13 @@ namespace smark_tests {
     // myserver.sin_family = AF_INET;
     // myserver.sin_addr.s_addr = htonl(INADDR_ANY);
     // myserver.sin_port = htons(listen_port);
+
+#define IP "0.0.0.0"
+
+    auto ip = IP;
+
     sockaddr_in addr;
-    uv_ip4_addr("127.0.0.1", listen_port, &addr);
+    uv_ip4_addr(ip, listen_port, &addr);
 
     // while (bind(sock_fd_, (sockaddr *)&myserver, sizeof(myserver)) < 0) {
     //   if (errno != EADDRINUSE) ERR("bind fail.");
@@ -114,14 +115,14 @@ namespace smark_tests {
 
     while (uv_tcp_bind(&server, (const sockaddr *)&addr, 0) == UV_EADDRINUSE) {
       listen_port++;
-      uv_ip4_addr("127.0.0.1", listen_port, &addr);
+      uv_ip4_addr(ip, listen_port, &addr);
     }
 
     // if (listen(sock_fd_, kMaxConns) < 0) {
     //   ERR("listen fail.");
     // }
 
-    if (uv_listen(reinterpret_cast<uv_stream_t *>(&server), kMaxConns, on_new_connection)) {
+    if (uv_listen((uv_stream_t *)(&server), kMaxConns, on_new_connection)) {
       ERR("listen fail.");
     }
 
@@ -211,7 +212,7 @@ namespace smark_tests {
           = "HTTP/1.1 200 OK\r\n"
             "test-header: test_value\r\n"
             "\r\n"
-            "This is a response";
+            "This is a response\0";
       char *data = (char *)malloc(sizeof(res));
       memcpy(data, res, sizeof(res));
       this->Send(cli, data, sizeof(res));

@@ -33,6 +33,7 @@ TestServer* test_svr = nullptr;
 SimpleHttpServer* simple_http_svr = nullptr;
 pthread_t svr_thread;
 uint16_t port = SVR_PORT;
+std::mutex port_mutex;
 uint16_t simple_http_port = SVR_PORT;
 
 void* _ServerThread(void* arg) {
@@ -41,40 +42,30 @@ void* _ServerThread(void* arg) {
   return nullptr;
 }
 
-void RunServer() {
-  if (test_svr == nullptr) {
-    test_svr = new TestServer();
-    port = test_svr->Connect(port);
-    int ret = pthread_create(&svr_thread, nullptr, &_ServerThread, test_svr);
-    if (ret == -1) {
-      printf("pthread create fail.");
-      exit(EXIT_FAILURE);
-    }
+uint16_t RunServer(TestServer* svr, pthread_t* thread) {
+  port_mutex.lock();
+  port++;
+  port = svr->Connect(port);
+  port_mutex.unlock();
+  int ret = pthread_create(thread, nullptr, &_ServerThread, svr);
+  if (ret == -1) {
+    printf("pthread create fail.");
+    exit(EXIT_FAILURE);
   }
+  return port;
 }
 
-void RunSimpleHttpServer() {
-  if (simple_http_svr == nullptr) {
-    simple_http_svr = new SimpleHttpServer();
-    simple_http_port = simple_http_svr->Connect(port);
-    int ret = pthread_create(&svr_thread, nullptr, &_ServerThread, simple_http_svr);
-    if (ret == -1) {
-      printf("pthread create fail.");
-      exit(EXIT_FAILURE);
-    }
-  }
-}
 using namespace smark;
 TEST_CASE("TCPClient") {
-  RunServer();
+  auto svr = new TestServer();
+  pthread_t thread;
+  uint16_t port = RunServer(svr, &thread);
   int task = 0;
   INIT_TASK;
 
   TCPClient cli;
   util::EventLoop el(MAX_EVENT);
-  el.SetEvent(&cli);
-  cli.Connect("127.0.0.1", port);
-  DLOG("Connected");
+
   const char data[] = "Hello world";
   cli.writable_event = [&cli, &task, &data](util::EventLoop* el) {
     (void)el;
@@ -90,6 +81,8 @@ TEST_CASE("TCPClient") {
     el->Stop();
     cli.readable_event = [](auto) {};
   };
+  el.SetEvent(&cli);
+  cli.Connect("127.0.0.1", port);
   el.Wait();
   cli.Close();
   END_TASK;
@@ -97,19 +90,23 @@ TEST_CASE("TCPClient") {
 }
 
 TEST_CASE("BasicBenchmark") {
-  RunSimpleHttpServer();
+  auto svr = new SimpleHttpServer();
+  pthread_t thread;
+  uint16_t port = RunServer(svr, &thread);
   Smark smark;
   smark.setting.connection_count = 4;
   smark.setting.thread_count = 2;
   smark.setting.ip = "127.0.0.1";
-  smark.setting.port = simple_http_port;
+  smark.setting.port = port;
   // smark.setting.timeout_us = -1;
   smark.Run();
   CHECK(smark.status.finish_count == smark.setting.connection_count);
 }
 
 TEST_CASE("HttpClient") {
-  RunSimpleHttpServer();
+  auto svr = new SimpleHttpServer();
+  pthread_t thread;
+  uint16_t port = RunServer(svr, &thread);
   INIT_TASK;
   int task = 0;
   auto req = std::make_shared<util::HttpRequest>();
@@ -137,13 +134,11 @@ TEST_CASE("HttpClient") {
     // cli.writable_event = [&cli](util::EventLoop* el) { write(cli.GetFD(), "\4", 1); };
     // cli.readable_event = [](util::EventLoop* el) { el->Stop(); }
   };
-  cli.Connect("127.0.0.1", simple_http_port);
+  cli.Connect("127.0.0.1", port);
   cli.Request(req);
 
   el.Wait();
-  // write(cli.GetFD(), "\4", 1);
   cli.Close();
-  uv_stop(simple_http_svr->loop);
   END_TASK;
   CHECK(task == __task_count);
 }
