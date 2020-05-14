@@ -98,7 +98,7 @@ TEST_CASE("BasicBenchmark") {
   DLOG("Run Http server on port:" << port);
   Smark smark;
   smark.setting.connection_count = 4;
-  smark.setting.thread_count = 4;
+  smark.setting.thread_count = 2;
   smark.setting.ip = "127.0.0.1";
   smark.setting.port = port;
   // smark.setting.timeout_us = -1;
