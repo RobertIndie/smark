@@ -23,7 +23,8 @@ namespace smark_tests {
       memcpy(send_data, data, len);
       this->Send(cli, send_data, len);
     };
-    loop = uv_default_loop();
+    loop = new uv_loop_t();
+    uv_loop_init(loop);
   }
   TestServer::~TestServer() {}
   typedef struct {
