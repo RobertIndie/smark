@@ -20,7 +20,7 @@ extern "C" {
 #  include <linux/version.h>
 #endif
 
-#define SVR_PORT 12138
+#define SVR_PORT 12238
 
 namespace smark_tests {
   class TestServer {

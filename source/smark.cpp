@@ -28,7 +28,7 @@ namespace smark {
     uint conn_per_thread = setting.connection_count / setting.thread_count;
     for (uint i = 0; i < setting.thread_count; i++) {
       auto thr_p = std::make_shared<std::thread>([conn_per_thread, this]() {  // thread_main
-        util::EventLoop el(1024);  // TODO: do not use hard code
+        util::EventLoop el;  // TODO: do not use hard code
         Status status;
         std::vector<std::shared_ptr<HttpClient>> clients;
 
@@ -43,7 +43,7 @@ namespace smark {
         req->body = "This is a request";
 
         for (uint i = 0; i < conn_per_thread; i++) {
-          auto clip = std::make_shared<HttpClient>();
+          auto clip = std::make_shared<HttpClient>(&el);
           clients.push_back(clip);
 
           status.request_count++;  // TODO: move to request callback
@@ -56,13 +56,13 @@ namespace smark {
             (void)res;
             cli->Close();
             status.finish_count++;
-            if (status.finish_count >= conn_per_thread) el.Stop();
+            // if (status.finish_count >= conn_per_thread) el.Stop();
             std::lock_guard<std::mutex> guard(status_mutex_);
             this->status.finish_count++;
           };
           clip->Connect(this->setting.ip, this->setting.port);
           clip->Request(req);
-          el.SetEvent(clip.get());
+          // el.SetEvent(clip.get());
         }
         el.Wait();
       });

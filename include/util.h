@@ -22,7 +22,16 @@ extern "C" {
 #include <map>
 #include <memory>
 
+#define _MACRO_CONTACT_IMPL(x, y) x##y
+#define _MACRO_CONTACT(x, y) _MACRO_CONTACT_IMPL(x, y)
+
+#define DEFER(X)                                                                      \
+  auto _MACRO_CONTACT(_cpp_defer_obj_, __LINE__)                                      \
+      = std::unique_ptr<void, std::function<void(void*)>>{reinterpret_cast<void*>(1), \
+                                                          [&](void*) { X }};
+
 namespace smark::util {
+  typedef std::function<void(int)> CallbackType;  // void(int status)
   class EventLoop;
   class IEventObj {
   public:
@@ -32,32 +41,36 @@ namespace smark::util {
   };
   class EventLoop {
   public:
-    EventLoop(int set_size);
-    enum EventFlag { kNone = 0, kWriteable = 1, kReadable = 2, kBoth = 3 };
-    void SetEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
-    void DelEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
+    EventLoop();
+    // enum EventFlag { kNone = 0, kWriteable = 1, kReadable = 2, kBoth = 3 };
+    // void SetEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
+    // void DelEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
     void Wait();
     void Stop();
+    static std::string GetErrorStr(int status) { return uv_strerror(status); }
+    friend class Socket;
 #ifdef SUPPORT_AE
   private:
-    aeEventLoop* ae_el_;
-    std::map<int, const IEventObj*> obj_map_;  // fd -> obj
-    static void writable_proc(aeEventLoop* loop, int fd, void* data, int mask);
-    static void readable_proc(aeEventLoop* loop, int fd, void* data, int mask);
+    // aeEventLoop* ae_el_;
+    std::unique_ptr<uv_loop_t> loop_ = std::make_unique<uv_loop_t>();
+    // std::map<int, const IEventObj*> obj_map_;  // fd -> obj
+    // static void writable_proc(aeEventLoop* loop, int fd, void* data, int mask);
+    // static void readable_proc(aeEventLoop* loop, int fd, void* data, int mask);
 #endif
   };
-  class Socket : public IEventObj {
+  class Socket {
   public:
-    Socket();
-    void Connect(std::string ip, int16_t port);
-    size_t Write(const char* data, int len);
-    size_t Read(char* buff, int len);
+    Socket(EventLoop* el);
+    void Connect(
+        std::string ip, int16_t port, CallbackType cb = [](auto) {});
+    void Write(
+        const char* data, int len, CallbackType cb = [](auto) {});
+    void ReadStart();
+    std::function<void(const char*, ssize_t)> on_read;
     void Close();
-    int GetFD() const;
-#ifdef SUPPORT_AE
+
   private:
-    int fd_ = -1;
-#endif
+    std::unique_ptr<uv_tcp_t> socket_ = std::make_unique<uv_tcp_t>();
   };
   class HttpPacket {
   public:

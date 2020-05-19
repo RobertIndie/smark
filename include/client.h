@@ -7,31 +7,27 @@
 #include "util.h"
 
 namespace smark {
-  class TCPClient : public smark::util::IEventObj {
+  class TCPClient : public smark::util::Socket {
   public:
-    TCPClient();
-    void Connect(std::string ip, int16_t port);
-    void Send(const char* data, int len);
-    size_t Recv(char* buff, int len);
-    virtual int GetFD() const;
-    void Close();
-
-  private:
-    smark::util::Socket socket_;
+    TCPClient(smark::util::EventLoop* el);
+    // void Connect(std::string ip, int16_t port);
+    // void Send(const char* data, int len);
+    // size_t Recv(char* buff, int len);
+    // std::function<void(const char*, ssize_t)> on_recv;
+    // void Close();
   };
 
-  class HttpClient : public smark::util::IEventObj {
+  class HttpClient : public TCPClient {
   public:
-    HttpClient();
-    void Connect(std::string ip, int16_t port);
+    HttpClient(smark::util::EventLoop* el);
+    // void Connect(std::string ip, int16_t port);
     void Request(std::shared_ptr<util::HttpRequest> request);
     std::function<void(HttpClient*, std::shared_ptr<util::HttpResponse>)> on_response;
-    virtual int GetFD() const;
-    void Close();
+    // virtual int GetFD() const;
+    // void Close();
 
   private:
-    TCPClient cli_;
     util::HttpReponseParser parser_;
-    std::queue<std::shared_ptr<util::HttpRequest>> request_queue_;
+    // std::queue<std::shared_ptr<util::HttpRequest>> request_queue_;
   };
 }  // namespace smark

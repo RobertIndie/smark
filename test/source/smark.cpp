@@ -64,28 +64,27 @@ TEST_CASE("TCPClient") {
   int task = 0;
   INIT_TASK;
 
-  TCPClient cli;
-  util::EventLoop el(MAX_EVENT);
+  util::EventLoop el;
+  TCPClient cli(&el);
 
   const char data[] = "Hello world";
-  cli.writable_event = [&cli, &task, &data](util::EventLoop* el) {
-    (void)el;
-    cli.Send(data, sizeof(data));
-    cli.writable_event = [](auto) {};
-  };
-  cli.readable_event = [&cli, &task, &data](util::EventLoop* el) {
-    (void)el;
+  cli.on_read = [&cli, &task, &data](const char* recv_data, ssize_t nread) {
     SUB_TASK(task);
-    char buff[1024];
-    cli.Recv(buff, sizeof(buff));
-    CHECK(strcmp(buff, data) == 0);
-    el->Stop();
-    cli.readable_event = [](auto) {};
+    CHECK(nread == sizeof(data));
+    CHECK(strcmp(recv_data, data) == 0);
+    cli.Close();
   };
-  el.SetEvent(&cli);
-  cli.Connect("127.0.0.1", port);
+  cli.Connect("127.0.0.1", port, [&cli, &task, &data](int status) {
+    if (status) {
+      ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+    }
+    cli.Write(data, sizeof(data), [](int status) {
+      if (status) {
+        ERR("Write error:" << util::EventLoop::GetErrorStr(status));
+      }
+    });
+  });
   el.Wait();
-  cli.Close();
   END_TASK;
   CHECK(task == __task_count);
 }
@@ -122,9 +121,8 @@ TEST_CASE("HttpClient") {
   req->headers.push_back(test_header);
   req->body = "This is a request";
 
-  HttpClient cli;
-  util::EventLoop el(MAX_EVENT);
-  el.SetEvent(&cli);
+  util::EventLoop el;
+  HttpClient cli(&el);
   cli.on_response = [&task, &el, &cli](auto, std::shared_ptr<util::HttpResponse> res) {
     SUB_TASK(task);
     CHECK(STR_COMPARE(res->status_code, "OK"));
@@ -134,12 +132,16 @@ TEST_CASE("HttpClient") {
     CHECK(STR_COMPARE(test_header->name, "test-header"));
     CHECK(STR_COMPARE(test_header->value, "test_value"));
     CHECK(STR_COMPARE(res->body, "This is a response"));
-    el.Stop();
+    cli.Close();
     // cli.writable_event = [&cli](util::EventLoop* el) { write(cli.GetFD(), "\4", 1); };
     // cli.readable_event = [](util::EventLoop* el) { el->Stop(); }
   };
-  cli.Connect("127.0.0.1", port);
-  cli.Request(req);
+  cli.Connect("127.0.0.1", port, [&cli, &req](int status) {
+    if (status) {
+      ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+    }
+    cli.Request(req);
+  });
 
   el.Wait();
   // cli.Close();
