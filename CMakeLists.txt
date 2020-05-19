@@ -14,6 +14,8 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.")
 endif()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g")
+
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
 
@@ -27,13 +29,23 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-  NAME ae
-  SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party/ae/
+  NAME HttpParser
+  SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party/http_parser/
 )
 
 CPMAddPackage(
-  NAME HttpParser
-  SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party/http_parser/
+  NAME uv_a
+  GITHUB_REPOSITORY libuv/libuv
+  VERSION 1.37.0
+)
+
+packageProject(
+  NAME uv_a
+  VERSION ${PROJECT_VERSION}
+  BINARY_DIR ${uv_a_BINARY_DIR}
+  INCLUDE_DIR ${uv_a_SOURCE_DIR}/include
+  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+  DEPENDENCIES 
 )
 
 # ---- Add source files ----
@@ -58,7 +70,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC ae HttpParser pthread)
+target_link_libraries(Smark PUBLIC uv_a HttpParser pthread)
 
 target_include_directories(Smark
   PUBLIC
@@ -75,5 +87,5 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "ae" "HttpParser"
+  DEPENDENCIES "uv_a" "HttpParser"
 )
