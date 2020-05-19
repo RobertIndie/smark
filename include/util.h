@@ -1,16 +1,5 @@
 #pragma once
-#ifdef __linux__
-#  define SUPPORT_AE
-#  define SUPPORT_PTHREAD
-#endif
-#ifdef SUPPORT_AE
-extern "C" {
-#  include <ae.h>
-}
-#endif
-#ifdef SUPPORT_PTHREAD
-#  include <pthread.h>
-#endif
+#include <pthread.h>
 
 extern "C" {
 #include <http_parser.h>
@@ -49,14 +38,13 @@ namespace smark::util {
     void Stop();
     static std::string GetErrorStr(int status) { return uv_strerror(status); }
     friend class Socket;
-#ifdef SUPPORT_AE
+
   private:
     // aeEventLoop* ae_el_;
     std::unique_ptr<uv_loop_t> loop_ = std::make_unique<uv_loop_t>();
     // std::map<int, const IEventObj*> obj_map_;  // fd -> obj
     // static void writable_proc(aeEventLoop* loop, int fd, void* data, int mask);
     // static void readable_proc(aeEventLoop* loop, int fd, void* data, int mask);
-#endif
   };
   class Socket {
   public:
