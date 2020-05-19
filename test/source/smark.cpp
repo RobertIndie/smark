@@ -133,8 +133,6 @@ TEST_CASE("HttpClient") {
     CHECK(STR_COMPARE(test_header->value, "test_value"));
     CHECK(STR_COMPARE(res->body, "This is a response"));
     cli.Close();
-    // cli.writable_event = [&cli](util::EventLoop* el) { write(cli.GetFD(), "\4", 1); };
-    // cli.readable_event = [](util::EventLoop* el) { el->Stop(); }
   };
   cli.Connect("127.0.0.1", port, [&cli, &req](int status) {
     if (status) {
@@ -144,7 +142,6 @@ TEST_CASE("HttpClient") {
   });
 
   el.Wait();
-  // cli.Close();
   END_TASK;
   CHECK(task == __task_count);
 }

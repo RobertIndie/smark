@@ -56,13 +56,11 @@ namespace smark {
             (void)res;
             cli->Close();
             status.finish_count++;
-            // if (status.finish_count >= conn_per_thread) el.Stop();
             std::lock_guard<std::mutex> guard(status_mutex_);
             this->status.finish_count++;
           };
           clip->Connect(this->setting.ip, this->setting.port);
           clip->Request(req);
-          // el.SetEvent(clip.get());
         }
         el.Wait();
       });

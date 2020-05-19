@@ -10,27 +10,7 @@
 #include "debug.h"
 
 namespace smark::util {
-  EventLoop::EventLoop() {
-    // #ifdef SUPPORT_AE
-    //     ae_el_ = aeCreateEventLoop(set_size);
-    // #endif
-    uv_loop_init(loop_.get());
-  }
-
-  // void EventLoop::writable_proc(aeEventLoop *loop, int fd, void *data, int mask) {
-  //   (void)loop;  // prevent unused parameter error
-  //   (void)mask;
-  //   auto el = reinterpret_cast<EventLoop *>(data);
-  //   auto obj = el->obj_map_[fd];
-  //   if (obj->writable_event) obj->writable_event(el);
-  // }
-  // void EventLoop::readable_proc(aeEventLoop *loop, int fd, void *data, int mask) {
-  //   (void)loop;
-  //   (void)mask;
-  //   auto el = reinterpret_cast<EventLoop *>(data);
-  //   auto obj = el->obj_map_[fd];
-  //   if (obj->readable_event) obj->readable_event(el);
-  // }
+  EventLoop::EventLoop() { uv_loop_init(loop_.get()); }
 
   void EventLoop::Wait() { uv_run(loop_.get(), UV_RUN_DEFAULT); }
 
@@ -57,25 +37,9 @@ namespace smark::util {
   }
 
   Socket::Socket(EventLoop *loop) {
-    // fd_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    // if (fd_ < 0) {
-    //   ERR("Create socket fail.");
-    // }
     uv_tcp_init(loop->loop_.get(), socket_.get());
     socket_.get()->data = this;
   }
-
-  // void set_nonblocking(int sock) {
-  //   int opts;
-  //   opts = fcntl(sock, F_GETFL);
-  //   if (opts < 0) {
-  //     ERR("set_nonblocking: get file status flags fail.");
-  //   }
-  //   opts = opts | O_NONBLOCK;
-  //   if (fcntl(sock, F_SETFL, opts) < 0) {
-  //     ERR("set_nonblocking: set file status flags fail.");
-  //   }
-  // }
 
   void on_connect(uv_connect_t *req, int status) {
     auto cb_ptr = static_cast<CallbackType *>(req->data);
@@ -87,21 +51,6 @@ namespace smark::util {
   }
 
   void Socket::Connect(std::string ip, int16_t port, CallbackType cb) {
-    // sockaddr_in serv_addr;
-    // serv_addr.sin_family = AF_INET;
-    // serv_addr.sin_port = htons(port);
-
-    // set_nonblocking(fd_);
-
-    // // Convert IPv4 and IPv6 addresses from text to binary form
-    // if (inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr) <= 0) {
-    //   ERR("Invalid address:" << LOG_VALUE(ip));
-    // }
-
-    // if (connect(fd_, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0
-    //     && errno != EINPROGRESS) {
-    //   ERR("Connect fail.");
-    // }
     auto connect_req = new uv_connect_t();
     struct sockaddr_in dest;
     uv_ip4_addr(ip.c_str(), port, &dest);
@@ -124,11 +73,6 @@ namespace smark::util {
   }
 
   void Socket::Write(const char *data, int len, CallbackType cb) {
-    // auto ret = write(fd_, data, len);
-    // if (ret == -1) {
-    //   ERR("Write err.");
-    // }
-    // return ret;
     auto req = new write_req_t();
 
     req->req.data = new CallbackType(cb);

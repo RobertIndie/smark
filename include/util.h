@@ -31,20 +31,13 @@ namespace smark::util {
   class EventLoop {
   public:
     EventLoop();
-    // enum EventFlag { kNone = 0, kWriteable = 1, kReadable = 2, kBoth = 3 };
-    // void SetEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
-    // void DelEvent(const IEventObj* obj, EventFlag flag = EventFlag::kBoth);
     void Wait();
     void Stop();
     static std::string GetErrorStr(int status) { return uv_strerror(status); }
     friend class Socket;
 
   private:
-    // aeEventLoop* ae_el_;
     std::unique_ptr<uv_loop_t> loop_ = std::make_unique<uv_loop_t>();
-    // std::map<int, const IEventObj*> obj_map_;  // fd -> obj
-    // static void writable_proc(aeEventLoop* loop, int fd, void* data, int mask);
-    // static void readable_proc(aeEventLoop* loop, int fd, void* data, int mask);
   };
   class Socket {
   public:
