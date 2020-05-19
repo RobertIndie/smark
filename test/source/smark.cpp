@@ -89,6 +89,29 @@ TEST_CASE("TCPClient") {
   CHECK(task == __task_count);
 }
 
+TEST_CASE("FailConnect") {
+  port_mutex.lock();
+  port++;
+  port_mutex.unlock();
+
+  int task = 0;
+  INIT_TASK;
+
+  util::EventLoop el;
+  TCPClient cli(&el);
+  cli.Connect("127.0.0.1", port, [&task](int status) {
+    SUB_TASK(task);
+    if (status) {
+      DLOG("Test fail connect:" << util::EventLoop::GetErrorStr(status));
+    }
+    CHECK(status == -111);
+  });
+
+  el.Wait();
+  END_TASK;
+  CHECK(task == __task_count);
+}
+
 TEST_CASE("BasicBenchmark") {
   DLOG("Test: BasicBenchmark");
   auto svr = new SimpleHttpServer();
