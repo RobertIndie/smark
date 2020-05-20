@@ -1,10 +1,4 @@
 #pragma once
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netinet/tcp.h>
-#include <sys/epoll.h>
-#include <sys/socket.h>
-#include <unistd.h>
 
 extern "C" {
 #include <uv.h>
@@ -15,9 +9,6 @@ extern "C" {
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-#if defined(__linux__)
-#  include <linux/version.h>
-#endif
 
 #define SVR_PORT 12238
 

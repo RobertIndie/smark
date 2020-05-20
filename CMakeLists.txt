@@ -14,7 +14,11 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+endif()
+
 
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
@@ -70,7 +74,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC uv_a HttpParser pthread)
+target_link_libraries(Smark PUBLIC uv_a HttpParser)
 
 target_include_directories(Smark
   PUBLIC
