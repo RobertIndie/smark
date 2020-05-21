@@ -87,6 +87,9 @@ namespace smark::util {
     #endif
     uv_write(reinterpret_cast<uv_write_t *>(req), reinterpret_cast<uv_stream_t *>(socket_.get()),
              &req->buf, 1, after_write);
+
+    // It will automatically close the handle after writting in windows platform, so restart reading after writting.
+    uv_read_start(reinterpret_cast<uv_stream_t *>(socket_.get()), alloc_buffer, on_read_cb);
   }
 
   void Socket::ReadStart() {}

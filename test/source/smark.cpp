@@ -92,7 +92,10 @@ TEST_CASE("FailConnect") {
     if (status) {
       DLOG("Test fail connect:" << util::EventLoop::GetErrorStr(status));
     }
-    CHECK(status == -111);
+
+    // Use macro instead of actual status code.
+    CHECK(status == UV_ECONNREFUSED);  // In windows platform, the status of error "connection refused"
+                                    // is -4078. But in linux, it is -111.
   });
 
   el.Wait();
@@ -109,8 +112,8 @@ TEST_CASE("BasicBenchmark") {
   DEFER(delete thread;)
   DLOG("Run Http server on port:" << p);
   Smark smark;
-  smark.setting.connection_count = 4;
-  smark.setting.thread_count = 2;
+  smark.setting.connection_count = 1;
+  smark.setting.thread_count = 1;
   smark.setting.ip = "127.0.0.1";
   smark.setting.port = p;
   // smark.setting.timeout_us = -1;
@@ -149,7 +152,7 @@ TEST_CASE("HttpClient") {
     CHECK(STR_COMPARE(res->body, "This is a response"));
     cli.Close();
   };
-  cli.Connect("127.0.0.1", port, [&cli, &req](int status) {
+  cli.Connect("127.0.0.1", p, [&cli, &req](int status) {
     if (status) {
       ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
     }

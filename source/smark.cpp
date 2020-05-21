@@ -59,8 +59,12 @@ namespace smark {
             std::lock_guard<std::mutex> guard(status_mutex_);
             this->status.finish_count++;
           };
-          clip->Connect(this->setting.ip, this->setting.port);
-          clip->Request(req);
+          clip->Connect(this->setting.ip, this->setting.port, [clip, req](int status) {
+            if (status) {
+              ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+            }
+            clip->Request(req);
+          });
         }
         el.Wait();
       });

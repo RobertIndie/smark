@@ -18,7 +18,11 @@ namespace smark {
 
   void HttpClient::Request(std::shared_ptr<util::HttpRequest> request) {
     auto data = request->ToString();
-    this->Write(data.c_str(), data.length());
+    this->Write(data.c_str(), data.length(), [](int status) {
+      if (status) {
+        ERR("Http request error:" << util::EventLoop::GetErrorStr(status));
+      }
+    });
   }
 
 }  // namespace smark
