@@ -43,6 +43,12 @@ CPMAddPackage(
   VERSION 1.37.0
 )
 
+CPMAddPackage(
+  NAME LuaGlue
+  VERSION 1.1.3
+  GITHUB_REPOSITORY TheLartians/LuaGlue
+)
+
 packageProject(
   NAME uv_a
   VERSION ${PROJECT_VERSION}
@@ -74,7 +80,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC uv_a HttpParser)
+target_link_libraries(Smark PUBLIC uv_a HttpParser LuaGlue)
 
 target_include_directories(Smark
   PUBLIC
