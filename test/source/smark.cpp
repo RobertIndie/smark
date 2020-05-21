@@ -3,9 +3,9 @@
 #include <doctest/doctest.h>
 #include <smark.h>
 
-#include <memory>
 #include <cstring>
 #include <future>
+#include <memory>
 
 #include "debug.h"
 #include "util.h"
@@ -32,7 +32,7 @@ using namespace smark_tests;
 uint16_t port = SVR_PORT;
 std::mutex port_mutex;
 
-uint16_t RunServer(TestServer* svr,std::thread* thread) {
+uint16_t RunServer(TestServer* svr, std::thread* thread) {
   port_mutex.lock();
   port++;
   port = svr->Connect(port);
@@ -94,8 +94,8 @@ TEST_CASE("FailConnect") {
     }
 
     // Use macro instead of actual status code.
-    CHECK(status == UV_ECONNREFUSED);  // In windows platform, the status of error "connection refused"
-                                    // is -4078. But in linux, it is -111.
+    CHECK(status == UV_ECONNREFUSED);  // In windows platform, the status of error "connection
+                                       // refused" is -4078. But in linux, it is -111.
   });
 
   el.Wait();

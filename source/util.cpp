@@ -6,7 +6,7 @@
 #include "debug.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-#define WIN
+#  define WIN
 #endif
 
 namespace smark::util {
@@ -33,11 +33,11 @@ namespace smark::util {
   void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
     (void)handle;
     buf->base = new char[suggested_size];
-    #ifdef WIN
+#ifdef WIN
     buf->len = static_cast<ULONG>(suggested_size);
-    #else
+#else
     buf->len = suggested_size;
-    #endif
+#endif
   }
 
   Socket::Socket(EventLoop *loop) {
@@ -80,15 +80,16 @@ namespace smark::util {
     auto req = new write_req_t();
 
     req->req.data = new CallbackType(cb);
-    #ifdef WIN
+#ifdef WIN
     req->buf = uv_buf_init(const_cast<char *>(data), static_cast<unsigned int>(len));
-    #else
+#else
     req->buf = uv_buf_init(const_cast<char *>(data), len);
-    #endif
+#endif
     uv_write(reinterpret_cast<uv_write_t *>(req), reinterpret_cast<uv_stream_t *>(socket_.get()),
              &req->buf, 1, after_write);
 
-    // It will automatically close the handle after writting in windows platform, so restart reading after writting.
+    // It will automatically close the handle after writting in windows platform, so restart reading
+    // after writting.
     uv_read_start(reinterpret_cast<uv_stream_t *>(socket_.get()), alloc_buffer, on_read_cb);
   }
 

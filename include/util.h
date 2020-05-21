@@ -8,8 +8,8 @@ extern "C" {
 
 #include <functional>
 #include <map>
-#include <thread>
 #include <memory>
+#include <thread>
 
 #define _MACRO_CONTACT_IMPL(x, y) x##y
 #define _MACRO_CONTACT(x, y) _MACRO_CONTACT_IMPL(x, y)
