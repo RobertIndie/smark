@@ -48,7 +48,7 @@ TEST_CASE("TCPClient") {
   DEFER(delete svr;)
   std::thread* thread = nullptr;
   uint16_t svr_port = RunServer(svr, &thread);
-  //DEFER(delete thread;)
+  // DEFER(delete thread;)
   DLOG("Run TCP server on port:" << svr_port);
   int task = 0;
   INIT_TASK;
@@ -110,7 +110,7 @@ TEST_CASE("BasicBenchmark") {
   DEFER(delete svr;)
   std::thread* thread = nullptr;
   uint16_t p = RunServer(svr, &thread);
-  //DEFER(delete thread;)
+  // DEFER(delete thread;)
   DLOG("Run Http server on port:" << p);
   Smark smark;
   smark.setting.connection_count = 1;
@@ -127,7 +127,7 @@ TEST_CASE("HttpClient") {
   DEFER(delete svr;)
   std::thread* thread = nullptr;
   uint16_t p = RunServer(svr, &thread);
-  //DEFER(delete thread;)
+  // DEFER(delete thread;)
   DLOG("Run Http server on port:" << p);
   INIT_TASK;
   int task = 0;
