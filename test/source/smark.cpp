@@ -33,12 +33,12 @@ using namespace smark_tests;
 uint16_t port = SVR_PORT;
 std::mutex port_mutex;
 
-uint16_t RunServer(TestServer* svr, std::thread* thread) {
+uint16_t RunServer(TestServer* svr, std::thread** thread) {
   port_mutex.lock();
   port++;
   port = svr->Connect(port);
   port_mutex.unlock();
-  thread = new std::thread([svr]() { svr->Run(); });
+  *thread = new std::thread([svr]() { svr->Run(); });
   return port;
 }
 
@@ -47,8 +47,8 @@ TEST_CASE("TCPClient") {
   auto svr = new TestServer();
   DEFER(delete svr;)
   std::thread* thread = nullptr;
-  uint16_t svr_port = RunServer(svr, thread);
-  DEFER(delete thread;)
+  uint16_t svr_port = RunServer(svr, &thread);
+  //DEFER(delete thread;)
   DLOG("Run TCP server on port:" << svr_port);
   int task = 0;
   INIT_TASK;
@@ -109,8 +109,8 @@ TEST_CASE("BasicBenchmark") {
   auto svr = new SimpleHttpServer();
   DEFER(delete svr;)
   std::thread* thread = nullptr;
-  uint16_t p = RunServer(svr, thread);
-  DEFER(delete thread;)
+  uint16_t p = RunServer(svr, &thread);
+  //DEFER(delete thread;)
   DLOG("Run Http server on port:" << p);
   Smark smark;
   smark.setting.connection_count = 1;
@@ -126,8 +126,8 @@ TEST_CASE("HttpClient") {
   auto svr = new SimpleHttpServer();
   DEFER(delete svr;)
   std::thread* thread = nullptr;
-  uint16_t p = RunServer(svr, thread);
-  DEFER(delete thread;)
+  uint16_t p = RunServer(svr, &thread);
+  //DEFER(delete thread;)
   DLOG("Run Http server on port:" << p);
   INIT_TASK;
   int task = 0;
