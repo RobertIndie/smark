@@ -1,4 +1,6 @@
 #pragma once
+#include "platform.h"
+DISABLE_SOME_WARNINGS
 #include <errno.h>
 #include <string.h>
 #define PRINT_ERRNO errno << " " << strerror(errno)

@@ -1,5 +1,4 @@
 #pragma once
-#include <pthread.h>
 
 extern "C" {
 #include <http_parser.h>
@@ -10,6 +9,7 @@ extern "C" {
 #include <functional>
 #include <map>
 #include <memory>
+#include <thread>
 
 #define _MACRO_CONTACT_IMPL(x, y) x##y
 #define _MACRO_CONTACT(x, y) _MACRO_CONTACT_IMPL(x, y)
@@ -45,7 +45,7 @@ namespace smark::util {
     void Connect(
         std::string ip, int16_t port, CallbackType cb = [](auto) {});
     void Write(
-        const char* data, int len, CallbackType cb = [](auto) {});
+        const char* data, size_t len, CallbackType cb = [](auto) {});
     void ReadStart();
     std::function<void(const char*, ssize_t)> on_read;
     void Close();

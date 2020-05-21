@@ -1,21 +1,9 @@
+#include "platform.h"
+DISABLE_SOME_WARNINGS
+#include "debug.h"
 #include "testsvr.h"
 
-#include "debug.h"
-
 namespace smark_tests {
-  void setnonblocking(int sock) {
-    int opts;
-    opts = fcntl(sock, F_GETFL);
-    if (opts < 0) {
-      perror("fcntl(sock,GETFL)");
-      exit(1);
-    }
-    opts = opts | O_NONBLOCK;
-    if (fcntl(sock, F_SETFL, opts) < 0) {
-      perror("fcntl(sock,SETFL,opts)");
-      exit(1);
-    }
-  }
 
   TestServer::TestServer() {
     on_msg = [this](uv_stream_t *cli, const char *data, int len) {

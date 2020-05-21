@@ -25,8 +25,8 @@ std::string Smark::greet(LanguageCode lang) const {
 
 namespace smark {
   void Smark::Run() {
-    uint conn_per_thread = setting.connection_count / setting.thread_count;
-    for (uint i = 0; i < setting.thread_count; i++) {
+    uint32_t conn_per_thread = setting.connection_count / setting.thread_count;
+    for (uint32_t i = 0; i < setting.thread_count; i++) {
       auto thr_p = std::make_shared<std::thread>([conn_per_thread, this]() {  // thread_main
         util::EventLoop el;  // TODO: do not use hard code
         Status status;
@@ -42,7 +42,7 @@ namespace smark {
         req->headers.push_back(test_header);
         req->body = "This is a request";
 
-        for (uint i = 0; i < conn_per_thread; i++) {
+        for (uint32_t i = 0; i < conn_per_thread; i++) {
           auto clip = std::make_shared<HttpClient>(&el);
           clients.push_back(clip);
 
@@ -59,8 +59,12 @@ namespace smark {
             std::lock_guard<std::mutex> guard(status_mutex_);
             this->status.finish_count++;
           };
-          clip->Connect(this->setting.ip, this->setting.port);
-          clip->Request(req);
+          clip->Connect(this->setting.ip, this->setting.port, [clip, req](int status) {
+            if (status) {
+              ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+            }
+            clip->Request(req);
+          });
         }
         el.Wait();
       });

@@ -1,10 +1,12 @@
+#include "platform.h"
+DISABLE_SOME_WARNINGS
 #include <client.h>
 #include <doctest/doctest.h>
-#include <pthread.h>
 #include <smark.h>
 
 #include <cstring>
 #include <future>
+#include <memory>
 
 #include "debug.h"
 #include "util.h"
@@ -26,41 +28,28 @@
 // do not use string.compare: fail on "This is a response"
 #define STR_COMPARE(str, value) strcmp(str.c_str(), value) == 0
 
-#define MAX_EVENT 1024
-
 using namespace smark_tests;
-TestServer* test_svr = nullptr;
-SimpleHttpServer* simple_http_svr = nullptr;
-pthread_t svr_thread;
+
 uint16_t port = SVR_PORT;
 std::mutex port_mutex;
-uint16_t simple_http_port = SVR_PORT;
 
-void* _ServerThread(void* arg) {
-  auto test_svr = (TestServer*)arg;
-  test_svr->Run();
-  return nullptr;
-}
-
-uint16_t RunServer(TestServer* svr, pthread_t* thread) {
+uint16_t RunServer(TestServer* svr, std::thread** thread) {
   port_mutex.lock();
   port++;
   port = svr->Connect(port);
   port_mutex.unlock();
-  int ret = pthread_create(thread, nullptr, &_ServerThread, svr);
-  if (ret == -1) {
-    printf("pthread create fail.");
-    exit(EXIT_FAILURE);
-  }
+  *thread = new std::thread([svr]() { svr->Run(); });
   return port;
 }
 
 using namespace smark;
 TEST_CASE("TCPClient") {
   auto svr = new TestServer();
-  pthread_t thread;
-  uint16_t port = RunServer(svr, &thread);
-  DLOG("Run TCP server on port:" << port);
+  DEFER(delete svr;)
+  std::thread* thread = nullptr;
+  uint16_t svr_port = RunServer(svr, &thread);
+  // DEFER(delete thread;)
+  DLOG("Run TCP server on port:" << svr_port);
   int task = 0;
   INIT_TASK;
 
@@ -104,7 +93,10 @@ TEST_CASE("FailConnect") {
     if (status) {
       DLOG("Test fail connect:" << util::EventLoop::GetErrorStr(status));
     }
-    CHECK(status == -111);
+
+    // Use macro instead of actual status code.
+    CHECK(status == UV_ECONNREFUSED);  // In windows platform, the status of error "connection
+                                       // refused" is -4078. But in linux, it is -111.
   });
 
   el.Wait();
@@ -115,14 +107,16 @@ TEST_CASE("FailConnect") {
 TEST_CASE("BasicBenchmark") {
   DLOG("Test: BasicBenchmark");
   auto svr = new SimpleHttpServer();
-  pthread_t thread;
-  uint16_t port = RunServer(svr, &thread);
-  DLOG("Run Http server on port:" << port);
+  DEFER(delete svr;)
+  std::thread* thread = nullptr;
+  uint16_t p = RunServer(svr, &thread);
+  // DEFER(delete thread;)
+  DLOG("Run Http server on port:" << p);
   Smark smark;
-  smark.setting.connection_count = 4;
-  smark.setting.thread_count = 2;
+  smark.setting.connection_count = 1;
+  smark.setting.thread_count = 1;
   smark.setting.ip = "127.0.0.1";
-  smark.setting.port = port;
+  smark.setting.port = p;
   // smark.setting.timeout_us = -1;
   smark.Run();
   CHECK(smark.status.finish_count == smark.setting.connection_count);
@@ -130,9 +124,11 @@ TEST_CASE("BasicBenchmark") {
 
 TEST_CASE("HttpClient") {
   auto svr = new SimpleHttpServer();
-  pthread_t thread;
-  uint16_t port = RunServer(svr, &thread);
-  DLOG("Run Http server on port:" << port);
+  DEFER(delete svr;)
+  std::thread* thread = nullptr;
+  uint16_t p = RunServer(svr, &thread);
+  // DEFER(delete thread;)
+  DLOG("Run Http server on port:" << p);
   INIT_TASK;
   int task = 0;
   auto req = std::make_shared<util::HttpRequest>();
@@ -157,7 +153,7 @@ TEST_CASE("HttpClient") {
     CHECK(STR_COMPARE(res->body, "This is a response"));
     cli.Close();
   };
-  cli.Connect("127.0.0.1", port, [&cli, &req](int status) {
+  cli.Connect("127.0.0.1", p, [&cli, &req](int status) {
     if (status) {
       ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
     }
