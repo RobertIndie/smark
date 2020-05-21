@@ -4,10 +4,7 @@
 #include <tuple>
 
 #include "debug.h"
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-#  define WIN
-#endif
+#include "platform.h"
 
 namespace smark::util {
   EventLoop::EventLoop() { uv_loop_init(loop_.get()); }

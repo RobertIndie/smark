@@ -1,4 +1,5 @@
-#pragma warning(disable : 4267)
+#include "platform.h"
+DISABLE_SOME_WARNINGS
 #include <client.h>
 #include <doctest/doctest.h>
 #include <smark.h>

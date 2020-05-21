@@ -1,8 +1,7 @@
-#pragma warning(disable : 4267)
-#pragma warning(disable : 4244)
-#include "testsvr.h"
-
+#include "platform.h"
+DISABLE_SOME_WARNINGS
 #include "debug.h"
+#include "testsvr.h"
 
 namespace smark_tests {
 
