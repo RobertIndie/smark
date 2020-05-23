@@ -34,7 +34,7 @@ namespace smark {
     void CallReponse(util::HttpResponse *response);
     void CallDone();
 
-  private:
+    // private:
     // std::unique_ptr<lua_State> state = std::make_unique<lua_State>(luaL_newstate());
     lua_State *state = luaL_newstate();
   };

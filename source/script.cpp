@@ -16,8 +16,9 @@ namespace smark {
   void Script::Init() {
     luabridge::getGlobalNamespace(state)
 
+        .beginNamespace("smark")
+
         .beginClass<util::HttpPacket>("Packet")  // Register util::HttpPacket
-        .addConstructor<void (*)(void)>()
         .addProperty("body", &util::HttpPacket::body)
         .addFunction("set_headers",
                      std::function<void(util::HttpPacket*, luabridge::LuaRef)>(
@@ -39,19 +40,21 @@ namespace smark {
                            std::map<std::string, std::string> result;
                            for (auto iter = packet->headers.begin(); iter != packet->headers.end();
                                 iter++) {
-                             result[iter->get()->name] = result[iter->get()->value];
+                             result[iter->get()->name] = iter->get()->value;
                            }
                            return result;
                          }))
         .endClass()
 
         .deriveClass<util::HttpRequest, util::HttpPacket>("Request")  // Register util::HttpRequest
+        .addConstructor<void (*)(void)>()
         .addProperty("method", &util::HttpRequest::method)
         .addProperty("uri", &util::HttpRequest::request_uri)
         .endClass()
 
         .deriveClass<util::HttpResponse, util::HttpPacket>(
             "Response")  // Register util::HttpResponse
+        .addConstructor<void (*)(void)>()
         .addProperty("status", &util::HttpResponse::status_code)
         .endClass()
 
@@ -61,7 +64,9 @@ namespace smark {
         .addFunction("set", &LuaThread::Set)
         .addFunction("get", &LuaThread::Get)
         .addFunction("stop", &LuaThread::Stop)
-        .endClass();
+        .endClass()
+
+        .endNamespace();
   }
 
   void Script::Run(std::string codes) { luaL_dostring(state, codes.c_str()); }

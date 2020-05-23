@@ -63,7 +63,7 @@ namespace smark::util {
     HttpPacket() {}
     std::vector<std::shared_ptr<Header>> headers;  // TODO: use map.
     std::string body;
-    virtual std::string ToString() const { return ""; }
+    virtual std::string ToString() const = 0;
   };
 
   class HttpRequest : public HttpPacket {

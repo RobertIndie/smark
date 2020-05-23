@@ -187,6 +187,89 @@ TEST_CASE("Script_Setup") {
   CHECK(STR_COMPARE(thread.env["testStr"], "str"));
 }
 
+TEST_CASE("Script_Init") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function init()\n"
+        " pass=true\n"
+        "end";
+  script.Run(code);
+  script.CallInit();
+  CHECK(luabridge::getGlobal(script.state, "pass"));
+}
+
+TEST_CASE("Script_Request") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function request()\n"
+        " local req = smark.Request()\n"
+        " req.body='content'\n"
+        " local headers = {}\n"
+        " headers['test']='value'\n"
+        " req:set_headers(headers)\n"
+        " req.method='GET'\n"
+        " req.uri='/test'\n"
+        " return req\n"
+        "end";
+  script.Run(code);
+  auto req = script.CallRequest();
+  CHECK(STR_COMPARE(req->headers[0]->name, "test"));
+  CHECK(STR_COMPARE(req->headers[0]->value, "value"));
+  CHECK(STR_COMPARE(req->method, "GET"));
+  CHECK(STR_COMPARE(req->request_uri, "/test"));
+  CHECK(STR_COMPARE(req->body, "content"));
+}
+
+TEST_CASE("Script_Response") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function check(b,mes)\n"
+        " if(b~=true)\n"
+        " then\n"
+        "   pass=false\n"
+        "   print(mes)\n"
+        "   error(mes)\n"
+        " end\n"
+        "end\n"
+        "function response(res)\n"
+        " check(res.body=='content','response body incorrect.')\n"
+        " check(res.status=='200','response status incorrect.')\n"
+        " headers = res:get_headers()\n"
+        " check(headers['test']=='value','response headers incorrect.')\n"
+        " pass=true\n"
+        "end";
+  script.Run(code);
+  util::HttpResponse res;
+  res.body = "content";
+  res.status_code = "200";
+  auto header = std::make_shared<util::HttpPacket::Header>();
+  header->name = "test";
+  header->value = "value";
+  res.headers.push_back(header);
+
+  script.CallReponse(&res);
+  CHECK(luabridge::getGlobal(script.state, "pass"));
+}
+
+TEST_CASE("Script_Done") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function done()\n"
+        " pass=true\n"
+        "end";
+  script.Run(code);
+  script.CallDone();
+  CHECK(luabridge::getGlobal(script.state, "pass"));
+}
+
 TEST_CASE("Smark") {
   using namespace smark;
 
