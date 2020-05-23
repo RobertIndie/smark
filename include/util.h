@@ -60,7 +60,8 @@ namespace smark::util {
       std::string name;
       std::string value;
     };
-    std::vector<std::shared_ptr<Header>> headers;
+    HttpPacket() {}
+    std::vector<std::shared_ptr<Header>> headers;  // TODO: use map.
     std::string body;
     virtual std::string ToString() const = 0;
   };

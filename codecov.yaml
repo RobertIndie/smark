@@ -2,6 +2,7 @@ ignore:
   - "test"
   - "third_party"
   - "source/util.cpp"
+  - "include/LuaBridge"
 
 comment:
   require_changes: true

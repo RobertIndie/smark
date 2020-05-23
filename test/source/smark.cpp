@@ -9,6 +9,7 @@ DISABLE_SOME_WARNINGS
 #include <memory>
 
 #include "debug.h"
+#include "script.h"
 #include "util.h"
 
 #if defined(_WIN32) || defined(WIN32)
@@ -157,12 +158,165 @@ TEST_CASE("HttpClient") {
     if (status) {
       ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
     }
-    cli.Request(req);
+    cli.Request(req.get());
   });
 
   el.Wait();
   END_TASK;
   CHECK(task == __task_count);
+}
+
+TEST_CASE("Script_Setup") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function setup()\n"
+        " thread.ip='127.0.0.1'\n"
+        " thread.port=12138\n"
+        " thread:set('testStr','str')\n"
+        // " thread:set('testInt',100)\n"
+        " thread:set('Str2',thread:get('testStr'))\n"
+        "end";
+  script.Run(code);
+  script.SetThread(&thread);
+  script.CallSetup();
+  CHECK(STR_COMPARE(thread.ip, "127.0.0.1"));
+  CHECK(thread.port == 12138);
+  CHECK(STR_COMPARE(thread.env["testStr"], "str"));
+  // CHECK(thread.env["testInt"] == 100);
+  CHECK(STR_COMPARE(thread.env["testStr"], "str"));
+}
+
+TEST_CASE("Script_Init") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function init()\n"
+        " pass=true\n"
+        "end";
+  script.Run(code);
+  script.CallInit();
+  CHECK(luabridge::getGlobal(script.state, "pass"));
+}
+
+TEST_CASE("Script_Request") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function request()\n"
+        " local req = smark.Request()\n"
+        " req.body='content'\n"
+        " local headers = {}\n"
+        " headers['test']='value'\n"
+        " req:set_headers(headers)\n"
+        " req.method='GET'\n"
+        " req.uri='/test'\n"
+        " return req\n"
+        "end";
+  script.Run(code);
+  auto req = script.CallRequest();
+  CHECK(STR_COMPARE(req->headers[0]->name, "test"));
+  CHECK(STR_COMPARE(req->headers[0]->value, "value"));
+  CHECK(STR_COMPARE(req->method, "GET"));
+  CHECK(STR_COMPARE(req->request_uri, "/test"));
+  CHECK(STR_COMPARE(req->body, "content"));
+}
+
+TEST_CASE("Script_Response") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function check(b,mes)\n"
+        " if(b~=true)\n"
+        " then\n"
+        "   pass=false\n"
+        "   print(mes)\n"
+        "   error(mes)\n"
+        " end\n"
+        "end\n"
+        "function response(res)\n"
+        " check(res.body=='content','response body incorrect.')\n"
+        " check(res.status=='200','response status incorrect.')\n"
+        " headers = res:get_headers()\n"
+        " check(headers['test']=='value','response headers incorrect.')\n"
+        " pass=true\n"
+        "end";
+  script.Run(code);
+  util::HttpResponse res;
+  res.body = "content";
+  res.status_code = "200";
+  auto header = std::make_shared<util::HttpPacket::Header>();
+  header->name = "test";
+  header->value = "value";
+  res.headers.push_back(header);
+
+  script.CallReponse(&res);
+  CHECK(luabridge::getGlobal(script.state, "pass"));
+}
+
+TEST_CASE("Script_Done") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function done()\n"
+        " pass=true\n"
+        "end";
+  script.Run(code);
+  script.CallDone();
+  CHECK(luabridge::getGlobal(script.state, "pass"));
+}
+
+TEST_CASE("Script_Smark") {
+  DLOG("Test: BasicBenchmark");
+  auto svr = new SimpleHttpServer();
+  DEFER(delete svr;)
+  std::thread* thread = nullptr;
+  uint16_t p = RunServer(svr, &thread);
+  // DEFER(delete thread;)
+  DLOG("Run Http server on port:" << p);
+  Smark smark;
+  smark.setting.connection_count = 1;
+  smark.setting.thread_count = 1;
+  smark.setting.ip = "127.0.0.1";
+  smark.setting.port = p;
+  // smark.setting.timeout_us = -1;
+  smark.setting.lua_code
+      = "function check(b,mes)\n"
+        " if(b~=true)\n"
+        " then\n"
+        "   pass=false\n"
+        "   print(mes)\n"
+        "   error(mes)\n"
+        " end\n"
+        "end\n"
+        "function setup()\n"
+        " thread:set('test_env','env_value')\n"
+        "end\n"
+        "function request()\n"
+        " call_request=true\n"
+        " local req = smark.Request()\n"
+        " req.body='This is a request'\n"
+        " local headers = {}\n"
+        " headers['test-header']='test_value'\n"
+        " req:set_headers(headers)\n"
+        " req.method='GET'\n"
+        " req.uri='/test'\n"
+        " return req\n"
+        "end\n"
+        "function response(res)\n"
+        " call_response=true\n"
+        "end\n"
+        "function done()\n"
+        " check(call_request,'Did not call request.')\n"
+        " check(call_response,'Did not call response.')\n"
+        " check(thread:get('test_env')=='env_value','Thread env test fail.')"
+        "end\n";
+  smark.Run();
 }
 
 TEST_CASE("Smark") {

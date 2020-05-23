@@ -6,6 +6,8 @@
 #include <thread>
 #include <vector>
 
+#include "script.h"
+
 namespace smark {
 
   enum class LanguageCode { EN, DE, ES, FR };
@@ -17,6 +19,7 @@ namespace smark {
     int timeout_us = -1;
     std::string ip;
     uint16_t port;
+    std::string lua_code;
   };
 
   class Status {
@@ -37,7 +40,7 @@ namespace smark {
     Status status;
 
   private:
-    std::vector<std::shared_ptr<std::thread>> thread_pool_;
+    std::map<std::shared_ptr<std::thread>, std::shared_ptr<LuaThread>> thread_pool_;
     std::mutex status_mutex_;
   };
 

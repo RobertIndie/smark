@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 # Note: update this to your new project's name and version
 project(Smark 
   VERSION 1.0
-  LANGUAGES CXX
+  LANGUAGES CXX C
 )
 
 # ---- Include guards ----
@@ -52,6 +52,49 @@ packageProject(
   DEPENDENCIES 
 )
 
+if (NOT TARGET lua)
+  CPMFindPackage(
+    NAME lua
+    GITHUB_REPOSITORY lua/lua
+    VERSION 5.3.5
+    # lua has no CMakeLists.txt
+    DOWNLOAD_ONLY YES
+  )
+
+  if (lua_ADDED)
+    # we have just downloaded the lua source as lua isn't installed locally
+    # create a new independent library LuaForGlue that is aliased to lua 
+    # this allows installing and using LuaGlue without interfering with other installations of lua  
+    FILE(GLOB lua_sources ${lua_SOURCE_DIR}/*.c)
+    FILE(GLOB lua_headers ${lua_SOURCE_DIR}/*.h)
+    add_library(LuaForGlue ${lua_sources} ${lua_headers})
+    set_target_properties(LuaForGlue PROPERTIES LINKER_LANGUAGE C)
+
+    target_include_directories(LuaForGlue
+      PUBLIC
+        $<BUILD_INTERFACE:${lua_SOURCE_DIR}>
+    )
+
+    if(ANDROID)
+    target_compile_definitions(LuaForGlue PRIVATE LUA_USE_POSIX LUA_USE_DLOPEN)
+    elseif(EMSCRIPTEN OR WIN32)
+    elseif(UNIX OR APPLE)
+      target_compile_definitions(LuaForGlue PRIVATE LUA_USE_POSIX_SPAWN LUA_USE_POSIX)
+    endif()
+
+    packageProject(
+      NAME LuaForGlue
+      VERSION 5.3.5
+      BINARY_DIR ${lua_BINARY_DIR}
+      INCLUDE_DIR ${lua_SOURCE_DIR}
+      INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+    )
+
+    add_library(lua ALIAS LuaForGlue)
+    set(ADDITIONAL_GLUE_DEPENDENCIES "LuaForGlue")
+  endif()
+endif()
+
 # ---- Add source files ----
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files automatically.
@@ -74,7 +117,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC uv_a HttpParser)
+target_link_libraries(Smark PUBLIC uv_a HttpParser LuaForGlue)
 
 target_include_directories(Smark
   PUBLIC
@@ -91,5 +134,5 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "uv_a" "HttpParser"
+  DEPENDENCIES "uv_a" "HttpParser" "LuaForGlue"
 )
