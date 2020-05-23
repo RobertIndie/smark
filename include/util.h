@@ -60,11 +60,10 @@ namespace smark::util {
       std::string name;
       std::string value;
     };
-    std::vector<std::shared_ptr<Header>> headers;
-    void SetHeaders(std::map<std::string, std::string> headers);
-    std::map<std::string, std::string> GetHeaders();
+    HttpPacket() {}
+    std::vector<std::shared_ptr<Header>> headers;  // TODO: use map.
     std::string body;
-    virtual std::string ToString() const = 0;
+    virtual std::string ToString() const { return ""; }
   };
 
   class HttpRequest : public HttpPacket {

@@ -9,29 +9,33 @@ extern "C" {
 }
 
 #include "LuaBridge/LuaBridge.h"
+#include "LuaBridge/Map.h"
 #include "debug.h"
 #include "util.h"
 
 namespace smark {
-  class Thread {
+  class LuaThread {
   public:
     std::string ip;
     uint16_t port;
     void Set(std::string name, luabridge::LuaRef value);
     luabridge::LuaRef Get(std::string name);
     void Stop();
-
-  private:
     std::map<std::string, luabridge::LuaRef> env;
   };
   class Script {
   public:
     Script();
     void Init();
-    void CallSetup(Thread *thread);
+    void Run(std::string codes);
+    void CallSetup(LuaThread *thread);
     void CallInit();
     util::HttpRequest *CallRequest();
     void CallReponse(util::HttpResponse *response);
     void CallDone();
+
+  private:
+    // std::unique_ptr<lua_State> state = std::make_unique<lua_State>(luaL_newstate());
+    lua_State *state = luaL_newstate();
   };
 }  // namespace smark

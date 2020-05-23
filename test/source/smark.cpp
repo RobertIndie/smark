@@ -9,6 +9,7 @@ DISABLE_SOME_WARNINGS
 #include <memory>
 
 #include "debug.h"
+#include "script.h"
 #include "util.h"
 
 #if defined(_WIN32) || defined(WIN32)
@@ -163,6 +164,27 @@ TEST_CASE("HttpClient") {
   el.Wait();
   END_TASK;
   CHECK(task == __task_count);
+}
+
+TEST_CASE("Script_Setup") {
+  LuaThread thread;
+  Script script;
+  script.Init();
+  auto code
+      = "function setup(thread)\n"
+        " thread.ip='127.0.0.1'\n"
+        " thread.port=12138\n"
+        " thread:set('testStr','str')\n"
+        " thread:set('testInt',100)\n"
+        " thread:set('Str2',thread:get('testStr'))\n"
+        "end";
+  script.Run(code);
+  script.CallSetup(&thread);
+  CHECK(STR_COMPARE(thread.ip, "127.0.0.1"));
+  CHECK(thread.port == 12138);
+  CHECK(STR_COMPARE(thread.env["testStr"].cast<std::string>(), "str"));
+  CHECK(thread.env["testInt"] == 100);
+  CHECK(STR_COMPARE(thread.env["testStr"].cast<std::string>(), "str"));
 }
 
 TEST_CASE("Smark") {

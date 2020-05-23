@@ -28,7 +28,7 @@ namespace smark {
     uint32_t conn_per_thread = setting.connection_count / setting.thread_count;
     for (uint32_t i = 0; i < setting.thread_count; i++) {
       auto thr_p = std::make_shared<std::thread>([conn_per_thread, this]() {  // thread_main
-        util::EventLoop el;  // TODO: do not use hard code
+        util::EventLoop el;
         Status status;
         std::vector<std::shared_ptr<HttpClient>> clients;
 
