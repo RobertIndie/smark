@@ -16,7 +16,7 @@ namespace smark {
     parser_.Init();
   }
 
-  void HttpClient::Request(std::shared_ptr<util::HttpRequest> request) {
+  void HttpClient::Request(util::HttpRequest* request) {
     auto data = request->ToString();
     this->Write(data.c_str(), data.length(), [](int status) {
       if (status) {

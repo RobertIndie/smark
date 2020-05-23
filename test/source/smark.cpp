@@ -158,7 +158,7 @@ TEST_CASE("HttpClient") {
     if (status) {
       ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
     }
-    cli.Request(req);
+    cli.Request(req.get());
   });
 
   el.Wait();
@@ -171,7 +171,7 @@ TEST_CASE("Script_Setup") {
   Script script;
   script.Init();
   auto code
-      = "function setup(thread)\n"
+      = "function setup()\n"
         " thread.ip='127.0.0.1'\n"
         " thread.port=12138\n"
         " thread:set('testStr','str')\n"
@@ -179,7 +179,8 @@ TEST_CASE("Script_Setup") {
         " thread:set('Str2',thread:get('testStr'))\n"
         "end";
   script.Run(code);
-  script.CallSetup(&thread);
+  script.SetThread(&thread);
+  script.CallSetup();
   CHECK(STR_COMPARE(thread.ip, "127.0.0.1"));
   CHECK(thread.port == 12138);
   CHECK(STR_COMPARE(thread.env["testStr"], "str"));
@@ -268,6 +269,54 @@ TEST_CASE("Script_Done") {
   script.Run(code);
   script.CallDone();
   CHECK(luabridge::getGlobal(script.state, "pass"));
+}
+
+TEST_CASE("Script_Smark") {
+  DLOG("Test: BasicBenchmark");
+  auto svr = new SimpleHttpServer();
+  DEFER(delete svr;)
+  std::thread* thread = nullptr;
+  uint16_t p = RunServer(svr, &thread);
+  // DEFER(delete thread;)
+  DLOG("Run Http server on port:" << p);
+  Smark smark;
+  smark.setting.connection_count = 1;
+  smark.setting.thread_count = 1;
+  smark.setting.ip = "127.0.0.1";
+  smark.setting.port = p;
+  // smark.setting.timeout_us = -1;
+  smark.setting.lua_code
+      = "function check(b,mes)\n"
+        " if(b~=true)\n"
+        " then\n"
+        "   pass=false\n"
+        "   print(mes)\n"
+        "   error(mes)\n"
+        " end\n"
+        "end\n"
+        "function setup()\n"
+        " thread:set('test_env','env_value')\n"
+        "end\n"
+        "function request()\n"
+        " call_request=true\n"
+        " local req = smark.Request()\n"
+        " req.body='This is a request'\n"
+        " local headers = {}\n"
+        " headers['test-header']='test_value'\n"
+        " req:set_headers(headers)\n"
+        " req.method='GET'\n"
+        " req.uri='/test'\n"
+        " return req\n"
+        "end\n"
+        "function response(res)\n"
+        " call_response=true\n"
+        "end\n"
+        "function done()\n"
+        " check(call_request,'Did not call request.')\n"
+        " check(call_response,'Did not call response.')\n"
+        " check(thread:get('test_env')=='env_value','Thread env test fail.')"
+        "end\n";
+  smark.Run();
 }
 
 TEST_CASE("Smark") {

@@ -15,7 +15,7 @@ namespace smark {
   class HttpClient : public TCPClient {
   public:
     HttpClient(smark::util::EventLoop* el);
-    void Request(std::shared_ptr<util::HttpRequest> request);
+    void Request(util::HttpRequest* request);
     std::function<void(HttpClient*, std::shared_ptr<util::HttpResponse>)> on_response;
 
   private:

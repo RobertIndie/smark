@@ -22,13 +22,15 @@ namespace smark {
     std::string Get(std::string name);
     void Stop();
     std::map<std::string, std::string> env;
+    std::function<void()> on_stop;
   };
   class Script {
   public:
     Script();
     void Init();
     void Run(std::string codes);
-    void CallSetup(LuaThread *thread);
+    void SetThread(LuaThread *thread);
+    void CallSetup();
     void CallInit();
     util::HttpRequest *CallRequest();
     void CallReponse(util::HttpResponse *response);

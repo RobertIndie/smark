@@ -9,7 +9,9 @@ namespace smark {
   std::string LuaThread::Get(std::string name) { /*return env[name];*/
     return env[name];
   }
-  void LuaThread::Stop() {}  // TODO:stop the thread
+  void LuaThread::Stop() {
+    if (on_stop) on_stop();
+  }
 
   Script::Script() { luaL_openlibs(state); }
 
@@ -71,13 +73,15 @@ namespace smark {
 
   void Script::Run(std::string codes) { luaL_dostring(state, codes.c_str()); }
 
-  void Script::CallSetup(LuaThread* thread) {
+  void Script::SetThread(LuaThread* thread) { luabridge::setGlobal(state, thread, "thread"); }
+
+  void Script::CallSetup() {
     auto setup = luabridge::getGlobal(state, "setup");
     if (setup.isNil()) return;
     if (!setup.isFunction()) {
       ERR("lua: setup is not a function.");
     }
-    setup(thread);
+    setup();
   }
 
   void Script::CallInit() {
