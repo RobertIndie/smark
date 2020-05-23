@@ -18,10 +18,10 @@ namespace smark {
   public:
     std::string ip;
     uint16_t port;
-    void Set(std::string name, luabridge::LuaRef value);
-    luabridge::LuaRef Get(std::string name);
+    void Set(std::string name, std::string value);
+    std::string Get(std::string name);
     void Stop();
-    std::map<std::string, luabridge::LuaRef> env;
+    std::map<std::string, std::string> env;
   };
   class Script {
   public:

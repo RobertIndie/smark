@@ -175,16 +175,16 @@ TEST_CASE("Script_Setup") {
         " thread.ip='127.0.0.1'\n"
         " thread.port=12138\n"
         " thread:set('testStr','str')\n"
-        " thread:set('testInt',100)\n"
+        // " thread:set('testInt',100)\n"
         " thread:set('Str2',thread:get('testStr'))\n"
         "end";
   script.Run(code);
   script.CallSetup(&thread);
   CHECK(STR_COMPARE(thread.ip, "127.0.0.1"));
   CHECK(thread.port == 12138);
-  CHECK(STR_COMPARE(thread.env["testStr"].cast<std::string>(), "str"));
-  CHECK(thread.env["testInt"] == 100);
-  CHECK(STR_COMPARE(thread.env["testStr"].cast<std::string>(), "str"));
+  CHECK(STR_COMPARE(thread.env["testStr"], "str"));
+  // CHECK(thread.env["testInt"] == 100);
+  CHECK(STR_COMPARE(thread.env["testStr"], "str"));
 }
 
 TEST_CASE("Smark") {

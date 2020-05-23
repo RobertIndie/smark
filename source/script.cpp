@@ -1,71 +1,67 @@
 #include "script.h"
 
 namespace smark {
-  void LuaThread::Set(std::string name, luabridge::LuaRef value) {
-    // env[name] = luabridge::LuaRef(value);
-    (void)name;
-    (void)value;
+  void LuaThread::Set(std::string name, std::string value) {  // TDOO: Support value type: LuaRef
+    // env[name] = value;
+    // env.insert(std::make_pair(name, luabridge::LuaRef(value)));
+    env[name] = value;
   }
-  luabridge::LuaRef LuaThread::Get(std::string name) { /*return env[name];*/
-    (void)name;
-    return luabridge::LuaRef(luaL_newstate());
+  std::string LuaThread::Get(std::string name) { /*return env[name];*/
+    return env[name];
   }
   void LuaThread::Stop() {}  // TODO:stop the thread
 
   Script::Script() { luaL_openlibs(state); }
 
   void Script::Init() {
-    luabridge::getGlobalNamespace(state);
+    luabridge::getGlobalNamespace(state)
 
-    // .beginClass<util::HttpPacket>("Packet")  // Register util::HttpPacket
-    // .addConstructor<void (*)(void)>()
-    // .addProperty("body", &util::HttpPacket::body)
-    //.addFunction("set_headers", &util::HttpPacket::SetHeaders)
-    // .addFunction("set_headers",
-    //              std::function<void(util::HttpPacket*, luabridge::LuaRef)>(
-    //                  [](util::HttpPacket* packet, luabridge::LuaRef headers) {
-    //                    if (headers.isTable()) {
-    //                      auto headersMap = headers.cast<std::map<std::string,
-    //                      std::string>>(); for (auto iter = headersMap.begin(); iter !=
-    //                      headersMap.end();
-    //                           iter++) {
-    //                        auto header = std::make_shared<util::HttpPacket::Header>();
-    //                        header->name = iter->first;
-    //                        header->value = iter->second;
-    //                        packet->headers.push_back(header);
-    //                      }
-    //                    }
-    //                  }))
-    // .addFunction("get_headers",
-    //              std::function<std::map<std::string, std::string>(util::HttpPacket*)>(
-    //                  [](util::HttpPacket* packet) {
-    //                    std::map<std::string, std::string> result;
-    //                    for (auto iter = packet->headers.begin(); iter !=
-    //                    packet->headers.end();
-    //                         iter++) {
-    //                      result[iter->get()->name] = result[iter->get()->value];
-    //                    }
-    //                    return result;
-    //                  }))
-    // .endClass();
+        .beginClass<util::HttpPacket>("Packet")  // Register util::HttpPacket
+        .addConstructor<void (*)(void)>()
+        .addProperty("body", &util::HttpPacket::body)
+        .addFunction("set_headers",
+                     std::function<void(util::HttpPacket*, luabridge::LuaRef)>(
+                         [](util::HttpPacket* packet, luabridge::LuaRef headers) {
+                           if (headers.isTable()) {
+                             auto headersMap = headers.cast<std::map<std::string, std::string>>();
+                             for (auto iter = headersMap.begin(); iter != headersMap.end();
+                                  iter++) {
+                               auto header = std::make_shared<util::HttpPacket::Header>();
+                               header->name = iter->first;
+                               header->value = iter->second;
+                               packet->headers.push_back(header);
+                             }
+                           }
+                         }))
+        .addFunction("get_headers",
+                     std::function<std::map<std::string, std::string>(util::HttpPacket*)>(
+                         [](util::HttpPacket* packet) {
+                           std::map<std::string, std::string> result;
+                           for (auto iter = packet->headers.begin(); iter != packet->headers.end();
+                                iter++) {
+                             result[iter->get()->name] = result[iter->get()->value];
+                           }
+                           return result;
+                         }))
+        .endClass()
 
-    // .deriveClass<util::HttpRequest, util::HttpPacket>("Request")  // Register util::HttpRequest
-    // .addProperty("method", &util::HttpRequest::method)
-    // .addProperty("uri", &util::HttpRequest::request_uri)
-    // .endClass()
+        .deriveClass<util::HttpRequest, util::HttpPacket>("Request")  // Register util::HttpRequest
+        .addProperty("method", &util::HttpRequest::method)
+        .addProperty("uri", &util::HttpRequest::request_uri)
+        .endClass()
 
-    // .deriveClass<util::HttpResponse, util::HttpPacket>(
-    //     "Response")  // Register util::HttpResponse
-    // .addProperty("status", &util::HttpResponse::status_code)
-    // .endClass();
+        .deriveClass<util::HttpResponse, util::HttpPacket>(
+            "Response")  // Register util::HttpResponse
+        .addProperty("status", &util::HttpResponse::status_code)
+        .endClass()
 
-    // .beginClass<LuaThread>("thread")  // Register LuaThread
-    // .addProperty("ip", &LuaThread::ip)
-    // .addProperty("port", &LuaThread::port)
-    // .addFunction("set", &LuaThread::Set)
-    // .addFunction("get", &LuaThread::Get)
-    // .addFunction("stop", &LuaThread::Stop)
-    // .endClass();
+        .beginClass<LuaThread>("thread")  // Register LuaThread
+        .addProperty("ip", &LuaThread::ip)
+        .addProperty("port", &LuaThread::port)
+        .addFunction("set", &LuaThread::Set)
+        .addFunction("get", &LuaThread::Get)
+        .addFunction("stop", &LuaThread::Stop)
+        .endClass();
   }
 
   void Script::Run(std::string codes) { luaL_dostring(state, codes.c_str()); }
