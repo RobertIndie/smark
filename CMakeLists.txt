@@ -87,7 +87,7 @@ if (NOT TARGET lua)
       VERSION 5.3.5
       BINARY_DIR ${lua_BINARY_DIR}
       INCLUDE_DIR ${lua_SOURCE_DIR}
-      INCLUDE_DESTINATION include/LuaForGlue-5.3.5
+      INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
     )
 
     add_library(lua ALIAS LuaForGlue)
