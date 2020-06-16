@@ -7,13 +7,15 @@
 #include <queue>
 #include <vector>
 
+#include "util.h"
+
 namespace smark::tasks {
   class TaskManager;
   class Task;
 
   typedef std::function<void(std::shared_ptr<Task>)> TaskProc;
 
-  class Task : std::enable_shared_from_this<Task> {
+  class Task : public smark::util::enable_shared_from_this<Task> {
   public:
     enum State { New, Runable, Dead };
     State state = State::New;
