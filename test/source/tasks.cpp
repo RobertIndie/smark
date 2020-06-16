@@ -10,7 +10,7 @@ using namespace smark::tasks;
 TEST_CASE("SimpleTask") {
   int task = 0;
   INIT_TASK;
-  Task co_task([](std::shared_ptr<Task> this_task) {
+  Task co_task([&](std::shared_ptr<Task> this_task) {
     SUB_TASK(task);
     this_task->Yield();
     SUB_TASK(task);

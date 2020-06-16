@@ -14,7 +14,7 @@ namespace smark::tasks {
 
       // TODO: add to finally
       this_ptr->state = State::Dead;
-      map2task.erase(cotask::this_task::get<cotask::task<>>);
+      map2task.erase(cotask::this_task::get<cotask::task<>>());
     });
   }
 
@@ -71,7 +71,8 @@ namespace smark::tasks {
     starting_tasks_.pop();
     switch (task->state) {
       case Task::State::New:
-        task->Start() break;
+        task->Start();
+        break;
 
       case Task::State::Runable:
         task->Resume();
@@ -96,6 +97,8 @@ namespace smark::tasks {
     task_mgr.Wait(current_task, task);
 
     current_task->Yield();
+
+    return task;
   }
 
   thread_local TaskManager task_mgr;

@@ -8,8 +8,11 @@
 #include <vector>
 
 namespace smark::tasks {
-  typedef std::function<void(std::shared_ptr<Task>)> TaskProc;
   class TaskManager;
+  class Task;
+
+  typedef std::function<void(std::shared_ptr<Task>)> TaskProc;
+
   class Task : std::enable_shared_from_this<Task> {
   public:
     enum State { New, Runable, Dead };

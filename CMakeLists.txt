@@ -87,10 +87,12 @@ if (NOT TARGET lua)
     add_library(LuaForGlue ${lua_sources} ${lua_headers})
     set_target_properties(LuaForGlue PROPERTIES LINKER_LANGUAGE C)
 
-    target_include_directories(LuaForGlue
-      PUBLIC
-        $<BUILD_INTERFACE:${lua_SOURCE_DIR}>
-    )
+    # target_include_directories(LuaForGlue
+    #   PUBLIC
+    #     $<BUILD_INTERFACE:${lua_SOURCE_DIR}>
+    # )
+
+    target_include_directories(LuaForGlue PUBLIC ${lua_SOURCE_DIR})
 
     if(ANDROID)
     target_compile_definitions(LuaForGlue PRIVATE LUA_USE_POSIX LUA_USE_DLOPEN)
