@@ -53,7 +53,7 @@ packageProject(
 )
 
 CPMAddPackage(
-  NAME copp
+  NAME libcopp
   GITHUB_REPOSITORY owt5008137/libcopp
   GIT_TAG 1.2.1
 )
@@ -61,13 +61,23 @@ CPMAddPackage(
 packageProject(
   NAME copp
   VERSION ${PROJECT_VERSION}
-  BINARY_DIR ${copp_BINARY_DIR}
-  INCLUDE_DIR ${copp_SOURCE_DIR}/include
+  BINARY_DIR ${libcopp_BINARY_DIR}
+  INCLUDE_DIR ${libcopp_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
   DEPENDENCIES 
 )
 
-target_include_directories(copp PUBLIC ${copp_SOURCE_DIR}/include)
+packageProject(
+  NAME cotask
+  VERSION ${PROJECT_VERSION}
+  BINARY_DIR ${libcopp_BINARY_DIR}
+  INCLUDE_DIR ${libcopp_SOURCE_DIR}/include
+  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+  DEPENDENCIES 
+)
+
+target_include_directories(copp PUBLIC ${libcopp_SOURCE_DIR}/include)
+target_include_directories(cotask PUBLIC ${libcopp_SOURCE_DIR}/include)
 
 if (NOT TARGET lua)
   CPMFindPackage(
@@ -136,7 +146,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC uv_a HttpParser LuaForGlue copp)
+target_link_libraries(Smark PUBLIC uv_a HttpParser LuaForGlue copp cotask)
 
 target_include_directories(Smark
   PUBLIC
