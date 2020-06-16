@@ -67,6 +67,8 @@ packageProject(
   DEPENDENCIES 
 )
 
+target_include_directories(copp PUBLIC ${copp_SOURCE_DIR}/include)
+
 if (NOT TARGET lua)
   CPMFindPackage(
     NAME lua
@@ -149,5 +151,5 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "uv_a" "HttpParser" "LuaForGlue" "copp"
+  DEPENDENCIES 
 )
