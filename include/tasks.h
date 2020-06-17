@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 
+#include "debug.h"
 #include "util.h"
 
 namespace smark::tasks {
@@ -15,6 +16,7 @@ namespace smark::tasks {
 
   typedef std::function<void(std::shared_ptr<Task>)> TaskProc;
 
+  // TODO: add exception handler
   class Task : public smark::util::enable_shared_from_this<Task> {
   public:
     enum State { New, Runable, Dead };
@@ -48,4 +50,7 @@ namespace smark::tasks {
   std::shared_ptr<Task> async(TaskProc proc);
   std::shared_ptr<Task> await(std::shared_ptr<Task> task);
   extern thread_local TaskManager task_mgr;
+#ifdef DEBUG
+  extern thread_local std::map<cotask::task<>*, std::shared_ptr<Task>> map2task;
+#endif
 }  // namespace smark::tasks

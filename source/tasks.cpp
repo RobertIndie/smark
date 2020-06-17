@@ -8,13 +8,10 @@ namespace smark::tasks {
   Task::Task(TaskProc proc) {
     auto this_ptr = shared_from_this();
     task_ptr_ = cotask::task<>::create([=]() {
+      DEFER(this_ptr->state = State::Dead;
+            map2task.erase(cotask::this_task::get<cotask::task<>>());)
       map2task[cotask::this_task::get<cotask::task<>>()] = this_ptr;
-
       proc(this_ptr);
-
-      // TODO: add to finally
-      this_ptr->state = State::Dead;
-      map2task.erase(cotask::this_task::get<cotask::task<>>());
     });
   }
 
