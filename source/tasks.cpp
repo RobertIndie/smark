@@ -63,6 +63,7 @@ namespace smark::tasks {
   }
 
   int TaskManager::RunOnce() {
+    if (is_stopped) return 0;
     int run_task_count = 0;
     if (starting_tasks_.size() == 0) return 0;
     auto task = starting_tasks_.front();  // use front before size check is undefined behaivour.
@@ -83,6 +84,8 @@ namespace smark::tasks {
     }
     return run_task_count;
   }
+
+  void TaskManager::Stop() { is_stopped = true; }
 
   std::shared_ptr<Task> GetCurrentTask() {
     return map2task[cotask::this_task::get<cotask::task<>>()];

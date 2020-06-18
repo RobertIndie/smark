@@ -103,7 +103,7 @@ TEST_CASE("TaskCompleteFromOutside") {
 
     task_mgr.RunOnce();  // run child_task
     func();              // set result of child_task
-    task_mgr.RunOnce();
+    task_mgr.RunOnce();  // let child_task trigger parent_task
 
     CHECK(task_mgr.RunOnce() == 0);  // ensure no running task remain.
   }).join();

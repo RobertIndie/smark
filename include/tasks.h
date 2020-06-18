@@ -46,6 +46,8 @@ namespace smark::tasks {
     void Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting);
     void StopTask(std::shared_ptr<Task> task);
     int RunOnce();
+    void Stop();
+    bool is_stopped = false;
 
   private:
     std::vector<std::shared_ptr<Task>> task_list_;
