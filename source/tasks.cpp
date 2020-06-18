@@ -32,23 +32,22 @@ namespace smark::tasks {
     }
   }
 
-  template <typename ResultType> void Task::Complete(ResultType* result) {
-    result_ = reinterpret_cast<void*>(result);
+  void Task::_Complete(void* result) {
+    result_ = result;
     task_mgr.StopTask(shared_from_this());
   }
 
-  template <typename ResultType> ResultType* Task::GetResult() {
-    return reinterpret_cast<ResultType*>(result_);
-  }
+  void* Task::_GetResult() { return result_; }
 
   std::shared_ptr<Task> TaskManager::NewTask(TaskProc proc) {
-    auto task = std::make_shared<Task>(proc);
+    auto task = smark::util::make_shared<Task>(proc);
     task_list_.push_back(task);
     return task;
   }
 
   void TaskManager::Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting) {
     waitting_tasks_[waitting] = waiter;
+    starting_tasks_.push(waitting);
   }
 
   void TaskManager::StopTask(std::shared_ptr<Task> task) {
@@ -63,21 +62,26 @@ namespace smark::tasks {
     }
   }
 
-  void TaskManager::RunOnce() {
-    auto task = starting_tasks_.front();
+  int TaskManager::RunOnce() {
+    int run_task_count = 0;
+    if (starting_tasks_.size() == 0) return 0;
+    auto task = starting_tasks_.front();  // use front before size check is undefined behaivour.
     starting_tasks_.pop();
     switch (task->state) {
       case Task::State::New:
         task->Start();
+        run_task_count++;
         break;
 
       case Task::State::Runable:
         task->Resume();
+        run_task_count++;
         break;
 
       default:
         break;
     }
+    return run_task_count;
   }
 
   std::shared_ptr<Task> GetCurrentTask() {

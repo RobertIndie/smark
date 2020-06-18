@@ -27,19 +27,25 @@ namespace smark::tasks {
     void Resume();
     void Wait(std::shared_ptr<Task> task);
     void WaitAll(const std::vector<std::shared_ptr<Task>>* task_list);
-    template <typename ResultType> void Complete(ResultType* result);
-    template <typename ResultType> ResultType* GetResult();
+    template <typename ResultType> void Complete(ResultType* result) {
+      _Complete(reinterpret_cast<void*>(result));
+    }
+    template <typename ResultType> ResultType* GetResult() {
+      return reinterpret_cast<ResultType*>(_GetResult());
+    }
 
   private:
     cotask::task<>::ptr_t task_ptr_;
     void* result_;
+    void _Complete(void* result);
+    void* _GetResult();
   };
   class TaskManager {
   public:
     std::shared_ptr<Task> NewTask(TaskProc proc);
     void Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting);
     void StopTask(std::shared_ptr<Task> task);
-    void RunOnce();
+    int RunOnce();
 
   private:
     std::vector<std::shared_ptr<Task>> task_list_;
