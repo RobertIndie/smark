@@ -78,3 +78,36 @@ TEST_CASE("TaskAsync") {
   END_TASK;
   CHECK(task == __task_count);
 }
+
+TEST_CASE("TaskCompleteFromOutside") {
+  int task = 0;
+  INIT_TASK;
+
+  std::thread([&task]() {
+    std::function func([]() {});
+
+    auto t1 = task_mgr.NewTask([&](std::shared_ptr<Task> this_task) {
+      (void)this_task;
+      auto child_task = async([&](std::shared_ptr<Task> this_task) {
+        SUB_TASK(task);
+        func = [this_task]() {
+          auto result = new int(1);
+          this_task->Complete<int>(result);
+        };
+      });
+      SUB_TASK(task);
+      auto result = await(child_task)->GetResult<int>();
+      CHECK(*result == 1);
+    });
+    t1->Start();
+
+    task_mgr.RunOnce();  // run child_task
+    func();              // set result of child_task
+    task_mgr.RunOnce();
+
+    CHECK(task_mgr.RunOnce() == 0);  // ensure no running task remain.
+  }).join();
+
+  END_TASK;
+  CHECK(task == __task_count);
+}
