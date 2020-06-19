@@ -19,6 +19,7 @@ namespace smark::tasks {
   // TODO: add exception handler
   class Task : public smark::util::enable_shared_from_this<Task> {
   public:
+    typedef std::function<void(std::shared_ptr<Task>)> ProcType;
     enum State { New, Runable, Dead };
     State state = State::New;
     explicit Task(TaskProc proc);
@@ -74,6 +75,11 @@ namespace smark::tasks {
   class TaskManager {
   public:
     std::shared_ptr<Task> NewTask(TaskProc proc);
+    void AddTask(std::shared_ptr<Task> task);
+    template <typename TaskType> std::shared_ptr<TaskType> AddTask(std::shared_ptr<TaskType> task) {
+      AddTask(std::dynamic_pointer_cast<Task>(task));
+      return task;
+    }
     void Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting);
     void StopTask(std::shared_ptr<Task> task);
     int RunOnce();
@@ -86,9 +92,16 @@ namespace smark::tasks {
     std::queue<std::shared_ptr<Task>> starting_tasks_;
   };
   std::shared_ptr<Task> GetCurrentTask();
-  std::shared_ptr<Task> async(TaskProc proc);
-  // template <typename ResultType> std::shared_ptr<ValueTask<ResultType>> async(ValueTaskProc
-  // proc);
+// std::shared_ptr<Task> async(TaskProc proc);
+#define task_async(proc) smark::tasks::task_mgr.NewTask(proc);
+#define vt_async(T, proc)                                     \
+  smark::tasks::task_mgr.AddTask<smark::tasks::ValueTask<T>>( \
+      smark::util::make_shared<smark::tasks::ValueTask<T>>(proc))
+  // template <typename T> std::shared_ptr<T> async(T::ProcType[T = T] proc) {
+  //   auto task = util::make_shared<T>(proc);
+  //   task_mgr.AddTask(std::dynamic_pointer_cast<Task>(T));
+  //   return task;
+  // }
   std::shared_ptr<Task> await(std::shared_ptr<Task> task);
   extern thread_local TaskManager task_mgr;
 #ifdef DEBUG

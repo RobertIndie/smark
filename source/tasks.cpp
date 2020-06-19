@@ -42,6 +42,8 @@ namespace smark::tasks {
     return task;
   }
 
+  void TaskManager::AddTask(std::shared_ptr<Task> task) { task_list_.push_back(task); }
+
   void TaskManager::Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting) {
     waitting_tasks_[waitting] = waiter;
     starting_tasks_.push(waitting);
@@ -88,10 +90,10 @@ namespace smark::tasks {
     return map2task[cotask::this_task::get<cotask::task<>>()];
   }
 
-  std::shared_ptr<Task> async(TaskProc proc) {
-    auto task = task_mgr.NewTask(proc);
-    return task;
-  }
+  // std::shared_ptr<Task> async(TaskProc proc) {
+  //   auto task = task_mgr.NewTask(proc);
+  //   return task;
+  // }
 
   // template <typename ResultType> std::shared_ptr<ValueTask<ResultType>> async(ValueTaskProc proc)
   // {}

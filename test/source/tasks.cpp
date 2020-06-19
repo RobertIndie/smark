@@ -60,7 +60,7 @@ TEST_CASE("TaskAsync") {
   std::thread([&task]() {
     auto t1 = task_mgr.NewTask([&](std::shared_ptr<Task> this_task) {
       (void)this_task;
-      auto child_task = async([&](std::shared_ptr<Task> this_task) {
+      auto child_task = task_async([&](std::shared_ptr<Task> this_task) {
         SUB_TASK(task);
         this_task->Stop();
       });
@@ -86,7 +86,7 @@ TEST_CASE("TaskStopFromOutside") {
 
     auto t1 = task_mgr.NewTask([&](std::shared_ptr<Task> this_task) {
       (void)this_task;
-      auto child_task = async([&](std::shared_ptr<Task> this_task) {
+      auto child_task = task_async([&](std::shared_ptr<Task> this_task) {
         SUB_TASK(task);
         func = [this_task]() { this_task->Stop(); };
       });
@@ -111,7 +111,7 @@ TEST_CASE("TaskValueTask") {
   INIT_TASK;
 
   std::thread([&task]() {
-    auto co_task = make_shared<ValueTask<int>>([&](std::shared_ptr<ValueTask<int>> this_task) {
+    auto co_task = vt_async(int, [&](std::shared_ptr<ValueTask<int>> this_task) {
       SUB_TASK(task);
       this_task->Yield();
       SUB_TASK(task);
