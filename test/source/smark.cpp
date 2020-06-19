@@ -18,7 +18,6 @@ DISABLE_SOME_WARNINGS
 #endif
 
 #include "testsvr.h"
-#include "util.h"
 
 using namespace smark_tests;
 
@@ -45,7 +44,7 @@ TEST_CASE("TCPClient") {
   int task = 0;
   INIT_TASK;
 
-  util::EventLoop el;
+  smark::util::EventLoop el;
   TCPClient cli(&el);
 
   const char data[] = "Hello world";
@@ -57,11 +56,11 @@ TEST_CASE("TCPClient") {
   };
   cli.Connect("127.0.0.1", port, [&cli, &task, &data](int status) {
     if (status) {
-      ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+      ERR("Connect error:" << smark::util::EventLoop::GetErrorStr(status));
     }
     cli.Write(data, sizeof(data), [](int status) {
       if (status) {
-        ERR("Write error:" << util::EventLoop::GetErrorStr(status));
+        ERR("Write error:" << smark::util::EventLoop::GetErrorStr(status));
       }
     });
   });
@@ -78,12 +77,12 @@ TEST_CASE("FailConnect") {
   int task = 0;
   INIT_TASK;
 
-  util::EventLoop el;
+  smark::util::EventLoop el;
   TCPClient cli(&el);
   cli.Connect("127.0.0.1", port, [&task](int status) {
     SUB_TASK(task);
     if (status) {
-      DLOG("Test fail connect:" << util::EventLoop::GetErrorStr(status));
+      DLOG("Test fail connect:" << smark::util::EventLoop::GetErrorStr(status));
     }
 
     // Use macro instead of actual status code.
@@ -123,18 +122,18 @@ TEST_CASE("HttpClient") {
   DLOG("Run Http server on port:" << p);
   INIT_TASK;
   int task = 0;
-  auto req = std::make_shared<util::HttpRequest>();
+  auto req = std::make_shared<smark::util::HttpRequest>();
   req->method = "Get";
   req->request_uri = "/test";
-  auto test_header = std::make_shared<util::HttpPacket::Header>();
+  auto test_header = std::make_shared<smark::util::HttpPacket::Header>();
   test_header->name = "test-header";
   test_header->value = "test_value";
   req->headers.push_back(test_header);
   req->body = "This is a request";
 
-  util::EventLoop el;
+  smark::util::EventLoop el;
   HttpClient cli(&el);
-  cli.on_response = [&task, &el, &cli](auto, std::shared_ptr<util::HttpResponse> res) {
+  cli.on_response = [&task, &el, &cli](auto, std::shared_ptr<smark::util::HttpResponse> res) {
     SUB_TASK(task);
     CHECK(STR_COMPARE(res->status_code, "OK"));
     int header_count = res->headers.size();
@@ -147,7 +146,7 @@ TEST_CASE("HttpClient") {
   };
   cli.Connect("127.0.0.1", p, [&cli, &req](int status) {
     if (status) {
-      ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+      ERR("Connect error:" << smark::util::EventLoop::GetErrorStr(status));
     }
     cli.Request(req.get());
   });
@@ -237,10 +236,10 @@ TEST_CASE("Script_Response") {
         " pass=true\n"
         "end";
   script.Run(code);
-  util::HttpResponse res;
+  smark::util::HttpResponse res;
   res.body = "content";
   res.status_code = "200";
-  auto header = std::make_shared<util::HttpPacket::Header>();
+  auto header = std::make_shared<smark::util::HttpPacket::Header>();
   header->name = "test";
   header->value = "value";
   res.headers.push_back(header);

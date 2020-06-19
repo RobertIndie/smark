@@ -111,3 +111,24 @@ TEST_CASE("TaskCompleteFromOutside") {
   END_TASK;
   CHECK(task == __task_count);
 }
+
+TEST_CASE("TaskValueTask") {
+  int task = 0;
+  INIT_TASK;
+
+  std::thread([&task]() {
+    auto co_task = make_shared<ValueTask<int>>([&](std::shared_ptr<ValueTask<int>> this_task) {
+      SUB_TASK(task);
+      this_task->Yield();
+      SUB_TASK(task);
+    });
+    CHECK(co_task->GetState() == Task::State::New);
+    co_task->Start();
+    CHECK(co_task->GetState() == Task::State::Runable);
+    co_task->Resume();
+    CHECK(co_task->GetState() == Task::State::Dead);
+  }).join();
+
+  END_TASK;
+  CHECK(task == __task_count);
+}

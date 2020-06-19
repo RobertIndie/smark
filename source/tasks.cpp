@@ -5,14 +5,16 @@
 namespace smark::tasks {
   thread_local std::map<cotask::task<>*, std::shared_ptr<Task>> map2task;
 
-  Task::Task(TaskProc proc) {
-    auto this_ptr = shared_from_this();
-    task_ptr_ = cotask::task<>::create([=]() {
-      DEFER(this_ptr->state = State::Dead;
-            map2task.erase(cotask::this_task::get<cotask::task<>>());)
-      map2task[cotask::this_task::get<cotask::task<>>()] = this_ptr;
-      proc(this_ptr);
-    });
+  Task::Task(TaskProc proc) { SetProc(proc); }
+
+  void Task::SetProc(TaskProc proc) { SetProcContext_<Task>(shared_from_this(), proc); }
+
+  void Task::RegisterTaskToMap2Task(std::shared_ptr<Task> task_ptr) {
+    map2task[cotask::this_task::get<cotask::task<>>()] = task_ptr;
+  }
+
+  void Task::UnregisterTaskFromMap2Task() {
+    map2task.erase(cotask::this_task::get<cotask::task<>>());
   }
 
   void Task::Start() {
@@ -32,12 +34,7 @@ namespace smark::tasks {
     }
   }
 
-  void Task::_Complete(void* result) {
-    result_ = result;
-    task_mgr.StopTask(shared_from_this());
-  }
-
-  void* Task::_GetResult() { return result_; }
+  void Task::Stop() { task_mgr.StopTask(shared_from_this()); }
 
   std::shared_ptr<Task> TaskManager::NewTask(TaskProc proc) {
     auto task = smark::util::make_shared<Task>(proc);
@@ -95,6 +92,9 @@ namespace smark::tasks {
     auto task = task_mgr.NewTask(proc);
     return task;
   }
+
+  // template <typename ResultType> std::shared_ptr<ValueTask<ResultType>> async(ValueTaskProc proc)
+  // {}
 
   std::shared_ptr<Task> await(std::shared_ptr<Task> task) {
     auto current_task = GetCurrentTask();
