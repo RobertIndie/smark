@@ -20,7 +20,7 @@ extern "C" {
                                                           [&](void*) { X }};
 
 namespace smark::util {
-  // enabe shared_from_this in construct
+  // enabe shared_from_this in constructor
   // from http://www.cplusplus.com/forum/general/202645/
   template <class T> void construct_deleter(T* t) {
     t->~T();
@@ -34,7 +34,7 @@ namespace smark::util {
 
     std::shared_ptr<T> shared_from_this() {
       if (_construct_pself) {
-        return *_construct_pself;
+        return *_construct_pself;  // in constructor
       } else {
         return _construct_self.lock();
       }
@@ -45,10 +45,10 @@ namespace smark::util {
     std::shared_ptr<T> rtn;
     T* t = (T*)calloc(1, sizeof(T));
     rtn.reset(t, construct_deleter<T>);
-    t->_construct_pself = &rtn;
+    t->enable_shared_from_this<T>::_construct_pself = &rtn;  // fix ambiguous
     t = new (t) T(std::forward<Params>(args)...);
-    t->_construct_pself = NULL;
-    t->_construct_self = rtn;
+    t->enable_shared_from_this<T>::_construct_pself = NULL;
+    t->enable_shared_from_this<T>::_construct_self = rtn;
 
     return rtn;
   }
