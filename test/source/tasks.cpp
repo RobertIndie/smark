@@ -62,12 +62,10 @@ TEST_CASE("TaskAsync") {
       (void)this_task;
       auto child_task = async([&](std::shared_ptr<Task> this_task) {
         SUB_TASK(task);
-        auto result = new int(1);
-        this_task->Complete<int>(result);
+        this_task->Stop();
       });
       SUB_TASK(task);
-      auto result = await(child_task)->GetResult<int>();
-      CHECK(*result == 1);
+      await(child_task);
     });
     t1->Start();
 
@@ -79,7 +77,7 @@ TEST_CASE("TaskAsync") {
   CHECK(task == __task_count);
 }
 
-TEST_CASE("TaskCompleteFromOutside") {
+TEST_CASE("TaskStopFromOutside") {
   int task = 0;
   INIT_TASK;
 
@@ -90,14 +88,10 @@ TEST_CASE("TaskCompleteFromOutside") {
       (void)this_task;
       auto child_task = async([&](std::shared_ptr<Task> this_task) {
         SUB_TASK(task);
-        func = [this_task]() {
-          auto result = new int(1);
-          this_task->Complete<int>(result);
-        };
+        func = [this_task]() { this_task->Stop(); };
       });
       SUB_TASK(task);
-      auto result = await(child_task)->GetResult<int>();
-      CHECK(*result == 1);
+      await(child_task);
     });
     t1->Start();
 

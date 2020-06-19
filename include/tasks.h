@@ -30,13 +30,6 @@ namespace smark::tasks {
     void Wait(std::shared_ptr<Task> task);
     void WaitAll(const std::vector<std::shared_ptr<Task>>* task_list);
     void Stop();
-    template <typename ResultType> void Complete(ResultType* result) {
-      result_ = reinterpret_cast<void*>(result);
-      Stop();
-    }
-    template <typename ResultType> ResultType* GetResult() {
-      return reinterpret_cast<ResultType*>(result_);
-    }
     virtual ~Task() = default;
 
   protected:
@@ -66,14 +59,6 @@ namespace smark::tasks {
     void SetProc(ProcType proc) {
       SetProcContext_<ValueTask<T>>(enable_shared_from_this<ValueTask<T>>::shared_from_this(),
                                     proc);
-    }
-    inline void Start() { Task::Start(); }
-    inline void Yield() { Task::Yield(); }
-    inline void Resume() { Task::Resume(); }
-    inline void Stop() { Task::Stop(); }
-    inline void Wait(std::shared_ptr<Task> task) { Task::Wait(task); }
-    inline void WaitAll(const std::vector<std::shared_ptr<Task>>* task_list) {
-      Task::WaitAll(task_list);
     }
     inline void Complete(std::shared_ptr<T> result) {
       result_ = std::static_pointer_cast<void>(result);
