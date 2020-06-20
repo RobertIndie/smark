@@ -19,6 +19,9 @@ extern "C" {
       = std::unique_ptr<void, std::function<void(void*)>>{reinterpret_cast<void*>(1), \
                                                           [&](void*) { X }};
 
+// macro overload util
+#define GET_MACRO_V2(_1, _2, NAME, ...) NAME
+
 namespace smark::util {
   // enabe shared_from_this in constructor
   // from http://www.cplusplus.com/forum/general/202645/

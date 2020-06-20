@@ -111,7 +111,7 @@ TEST_CASE("TaskValueTask") {
   INIT_TASK;
 
   std::thread([&task]() {
-    auto co_task = vt_async(int, [&](std::shared_ptr<ValueTask<int>> this_task) {
+    auto co_task = _async(int, [&](std::shared_ptr<ValueTask<int>> this_task) {
       SUB_TASK(task);
       this_task->Yield();
       SUB_TASK(task);

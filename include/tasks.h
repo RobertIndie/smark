@@ -93,6 +93,7 @@ namespace smark::tasks {
   };
   std::shared_ptr<Task> GetCurrentTask();
 // std::shared_ptr<Task> async(TaskProc proc);
+#define _async(...) GET_MACRO_V2(__VA_ARGS__, vt_async, task_async)(__VA_ARGS__)
 #define task_async(proc) smark::tasks::task_mgr.NewTask(proc);
 #define vt_async(T, proc)                                     \
   smark::tasks::task_mgr.AddTask<smark::tasks::ValueTask<T>>( \
