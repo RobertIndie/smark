@@ -58,7 +58,7 @@ TEST_CASE("TaskAsync") {
   INIT_TASK;
 
   std::thread([&task]() {
-    auto t1 = task_mgr.NewTask([&](std::shared_ptr<Task> this_task) {
+    auto t1 = _async([&](std::shared_ptr<Task> this_task) {
       (void)this_task;
       auto child_task = task_async([&](std::shared_ptr<Task> this_task) {
         SUB_TASK(task);
@@ -84,7 +84,7 @@ TEST_CASE("TaskStopFromOutside") {
   std::thread([&task]() {
     std::function func([]() {});
 
-    auto t1 = task_mgr.NewTask([&](std::shared_ptr<Task> this_task) {
+    auto t1 = _async([&](std::shared_ptr<Task> this_task) {
       (void)this_task;
       auto child_task = task_async([&](std::shared_ptr<Task> this_task) {
         SUB_TASK(task);

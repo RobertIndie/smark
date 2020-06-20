@@ -36,14 +36,6 @@ namespace smark::tasks {
 
   void Task::Stop() { task_mgr.StopTask(shared_from_this()); }
 
-  std::shared_ptr<Task> TaskManager::NewTask(TaskProc proc) {
-    auto task = smark::util::make_shared<Task>(proc);
-    task_list_.push_back(task);
-    return task;
-  }
-
-  void TaskManager::AddTask(std::shared_ptr<Task> task) { task_list_.push_back(task); }
-
   void TaskManager::Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting) {
     waitting_tasks_[waitting] = waiter;
     starting_tasks_.push(waitting);
@@ -54,10 +46,6 @@ namespace smark::tasks {
     if (iter != waitting_tasks_.end()) {
       starting_tasks_.push(iter->second);
       waitting_tasks_.erase(iter);
-    }
-    auto t = std::find(task_list_.begin(), task_list_.end(), task);
-    if (t != task_list_.end()) {
-      task_list_.erase(t);
     }
   }
 

@@ -74,12 +74,6 @@ namespace smark::tasks {
 
   class TaskManager {
   public:
-    std::shared_ptr<Task> NewTask(TaskProc proc);
-    void AddTask(std::shared_ptr<Task> task);
-    template <typename TaskType> std::shared_ptr<TaskType> AddTask(std::shared_ptr<TaskType> task) {
-      AddTask(std::dynamic_pointer_cast<Task>(task));
-      return task;
-    }
     void Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting);
     void StopTask(std::shared_ptr<Task> task);
     int RunOnce();
@@ -87,17 +81,14 @@ namespace smark::tasks {
     bool is_stopped = false;
 
   private:
-    std::vector<std::shared_ptr<Task>> task_list_;
     std::map<std::shared_ptr<Task>, std::shared_ptr<Task>> waitting_tasks_;
     std::queue<std::shared_ptr<Task>> starting_tasks_;
   };
   std::shared_ptr<Task> GetCurrentTask();
 // std::shared_ptr<Task> async(TaskProc proc);
 #define _async(...) GET_MACRO_V2(__VA_ARGS__, vt_async, task_async)(__VA_ARGS__)
-#define task_async(proc) smark::tasks::task_mgr.NewTask(proc);
-#define vt_async(T, proc)                                     \
-  smark::tasks::task_mgr.AddTask<smark::tasks::ValueTask<T>>( \
-      smark::util::make_shared<smark::tasks::ValueTask<T>>(proc))
+#define task_async(proc) smark::util::make_shared<smark::tasks::Task>(proc)
+#define vt_async(T, proc) smark::util::make_shared<smark::tasks::ValueTask<T>>(proc)
   // template <typename T> std::shared_ptr<T> async(T::ProcType[T = T] proc) {
   //   auto task = util::make_shared<T>(proc);
   //   task_mgr.AddTask(std::dynamic_pointer_cast<Task>(T));
