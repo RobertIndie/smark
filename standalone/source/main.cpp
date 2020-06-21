@@ -17,12 +17,19 @@ int main(int argc, char** argv) {
 
   std::string language;
   std::string name;
+  std::string ip;
+  std::string simple_http_port;
+  int connection_count,thread_count;
 
   // clang-format off
   options.add_options()
     ("h,help", "Show help")
     ("n,name", "Name to greet", cxxopts::value(name)->default_value("World"))
     ("l,lang", "Language code to use", cxxopts::value(language)->default_value("en"))
+    ("p,port","set remote port",cxxopts::value<std::string>(simple_http_port))
+    ("ip","set remote ip",cxxopts::value<std::string>(ip))
+    ("t,thread","set the number of threads",cxxopts::value<int>(thread_count))
+    ("c,connection","set the number of connection",cxxopts::value<int>(connection_count))
   ;
   // clang-format on
 
