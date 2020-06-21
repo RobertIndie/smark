@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   options.add_options()
     ("h,help","show help")
     ("p,port","set remote port",cxxopts::value<uint16_t>(port)->default_value("80"))
-    ("ip","set remote ip",cxxopts::value<std::string>(ip)->default_value("127.0.0.1"))
+    ("h,host","set remote ip",cxxopts::value<std::string>(ip)->default_value("127.0.0.1"))
     ("t,thread","set the number of threads",cxxopts::value<uint32_t>(thread_count)->default_value("1"))
     ("c,connection","set the number of connection",cxxopts::value<uint32_t>(connection_count)->default_value("1"))
   ;
