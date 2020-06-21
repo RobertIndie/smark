@@ -24,36 +24,41 @@ extern "C" {
 
 namespace smark::util {
   // enabe shared_from_this in constructor
-  // from http://www.cplusplus.com/forum/general/202645/
-  template <class T> void construct_deleter(T* t) {
+  template <class T, class PtrT> void deleter(PtrT* __ptr) {
+    auto t = static_cast<T*>(__ptr);
     t->~T();
     free(t);
   }
 
+  /**
+   * Base class allowing use of member function shared_from_this in constructor function,member
+   * function.
+   */
   template <class T> class enable_shared_from_this {
   public:
     std::shared_ptr<T>* _construct_pself;
     std::weak_ptr<T> _construct_self;
 
-    std::shared_ptr<T> shared_from_this() {
+    template <class RT = T> std::shared_ptr<RT> shared_from_this() {
       if (_construct_pself) {
-        return *_construct_pself;  // in constructor
+        return std::static_pointer_cast<RT>(*_construct_pself);  // in constructor
       } else {
-        return _construct_self.lock();
+        return std::static_pointer_cast<RT>(_construct_self.lock());
       }
     }
   };
 
-  template <class T, typename... Params> std::shared_ptr<T> make_shared(Params&&... args) {
-    std::shared_ptr<T> rtn;
+  template <class BaseT, class T, typename... Params>
+  std::shared_ptr<T> make_shared(Params&&... args) {
+    std::shared_ptr<BaseT> rtn;
     T* t = (T*)calloc(1, sizeof(T));
-    rtn.reset(t, construct_deleter<T>);
-    t->enable_shared_from_this<T>::_construct_pself = &rtn;  // fix ambiguous
+    rtn.reset(t, deleter<BaseT, T>);
+    t->_construct_pself = &rtn;
     t = new (t) T(std::forward<Params>(args)...);
-    t->enable_shared_from_this<T>::_construct_pself = NULL;
-    t->enable_shared_from_this<T>::_construct_self = rtn;
+    t->_construct_pself = NULL;
+    t->_construct_self = rtn;
 
-    return rtn;
+    return std::static_pointer_cast<T>(rtn);
   }
 
   typedef std::function<void(int)> CallbackType;  // void(int status)
