@@ -21,8 +21,7 @@ int main(int argc, char** argv) {
     ("t,thread","set the number of threads",cxxopts::value<uint32_t>(thread_count)->default_value("1"))
     ("c,connection","set the number of connection",cxxopts::value<uint32_t>(connection_count)->default_value("1"))
   ;
-  // clang-format on
-
+  
   // exception handing
   try {
     auto result = options.parse(argc, argv);
