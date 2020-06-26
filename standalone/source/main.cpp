@@ -47,6 +47,11 @@ int main(int argc, char** argv) {
   //   std::cout<<"set the number of connection error"<<std::endl;
   //   connection_count=result["thread"].as<uint32_t>();
   // }
+  auto result=options.parse(argc,argv);
+  if(!result.count("option"))
+  {
+    std::cout<<"获取检索选项失败"<<std::endl;
+  }
   Smark smark;
   smark.Run();
 
