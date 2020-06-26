@@ -9,7 +9,6 @@ using namespace smark;
 int main(int argc, char** argv) {
   cxxopts::Options options(argv[0], "A program to welcome the world!");
 
-<<<<<<< HEAD
   std::string ip;
   uint16_t port;
   uint32_t connection_count, thread_count;
@@ -17,28 +16,12 @@ int main(int argc, char** argv) {
   // clang-format off
   options.add_options()
     ("p,port","set remote port",cxxopts::value<uint16_t>(port)->default_value("80"))
-    ("ip","set remote ip",cxxopts::value<std::string>(ip)->default_value("127.0.0.1"))
+    ("h,host","set remote ip",cxxopts::value<std::string>(ip)->default_value("127.0.0.1"))
     ("t,thread","set the number of threads",cxxopts::value<uint32_t>(thread_count)->default_value("1"))
     ("c,connection","set the number of connection",cxxopts::value<uint32_t>(connection_count)->default_value("1"))
-=======
-  std::string language;
-  std::string name;
-  std::string ip;
-  std::string simple_http_port;
-  int connection_count,thread_count;
 
-  // clang-format off
-  options.add_options()
-    ("h,help", "Show help")
-    ("n,name", "Name to greet", cxxopts::value(name)->default_value("World"))
-    ("l,lang", "Language code to use", cxxopts::value(language)->default_value("en"))
-    ("p,port","set remote port",cxxopts::value<std::string>(simple_http_port))
-    ("ip","set remote ip",cxxopts::value<std::string>(ip))
-    ("t,thread","set the number of threads",cxxopts::value<int>(thread_count))
-    ("c,connection","set the number of connection",cxxopts::value<int>(connection_count))
->>>>>>> cxxops
   ;
-  //clang-format on
+  // clang-format on
   
  //exception handing
   try {
@@ -60,6 +43,7 @@ int main(int argc, char** argv) {
   
   
 //smark parameter initialization and its call
+
   Smark smark;
   smark.setting.connection_count =connection_count; 
   smark.setting.thread_count = thread_count; 
