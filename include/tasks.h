@@ -52,24 +52,22 @@ namespace smark::tasks {
     void UnregisterTaskFromMap2Task();
   };
 
-  template <typename T> class ValueTask : public smark::util::enable_shared_from_this<ValueTask<T>>,
-                                          public Task {
+  template <typename T> class ValueTask : public Task {
   public:
     typedef std::function<void(std::shared_ptr<ValueTask<T>>)> ProcType;
     explicit ValueTask(ProcType proc) : Task() { SetProc(proc); }
     void SetProc(ProcType proc) {
-      SetProcContext_<ValueTask<T>>(enable_shared_from_this<ValueTask<T>>::shared_from_this(),
-                                    proc);
+      SetProcContext_<ValueTask<T>>(shared_from_this<ValueTask<T>>(), proc);
     }
     inline void Complete(std::shared_ptr<T> result) {
       result_ = std::static_pointer_cast<void>(result);
       Task::Stop();
     }
-    inline std::shared_ptr<T> GetResult() { return std::dynamic_pointer_cast<T>(result_); }
+    inline std::shared_ptr<T> GetResult() { return std::static_pointer_cast<T>(result_); }
     inline State GetState() { return state; }
 
   private:
-    std::shared_ptr<void*> result_;
+    std::shared_ptr<void> result_;
   };
 
   class TaskManager {
@@ -84,18 +82,24 @@ namespace smark::tasks {
     std::map<std::shared_ptr<Task>, std::shared_ptr<Task>> waitting_tasks_;
     std::queue<std::shared_ptr<Task>> starting_tasks_;
   };
+
   std::shared_ptr<Task> GetCurrentTask();
-// std::shared_ptr<Task> async(TaskProc proc);
+
+  extern thread_local TaskManager task_mgr;
+
 #define _async(...) GET_MACRO_V2(__VA_ARGS__, vt_async, task_async)(__VA_ARGS__)
 #define task_async(proc) smark::util::make_shared<smark::tasks::Task>(proc)
-#define vt_async(T, proc) smark::util::make_shared<smark::tasks::ValueTask<T>>(proc)
-  // template <typename T> std::shared_ptr<T> async(T::ProcType[T = T] proc) {
-  //   auto task = util::make_shared<T>(proc);
-  //   task_mgr.AddTask(std::dynamic_pointer_cast<Task>(T));
-  //   return task;
-  // }
-  std::shared_ptr<Task> await(std::shared_ptr<Task> task);
-  extern thread_local TaskManager task_mgr;
+#define vt_async(T, proc) \
+  smark::util::make_shared<smark::tasks::Task, smark::tasks::ValueTask<T>>(proc)
+
+  template <typename T> std::shared_ptr<T> await(std::shared_ptr<T> task) {
+    auto current_task = GetCurrentTask();
+    task_mgr.Wait(current_task, std::dynamic_pointer_cast<Task>(task));
+
+    current_task->Yield();
+
+    return std::dynamic_pointer_cast<T>(task);
+  }
 #ifdef DEBUG
   extern thread_local std::map<cotask::task<>*, std::shared_ptr<Task>> map2task;
 #endif

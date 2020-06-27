@@ -78,22 +78,5 @@ namespace smark::tasks {
     return map2task[cotask::this_task::get<cotask::task<>>()];
   }
 
-  // std::shared_ptr<Task> async(TaskProc proc) {
-  //   auto task = task_mgr.NewTask(proc);
-  //   return task;
-  // }
-
-  // template <typename ResultType> std::shared_ptr<ValueTask<ResultType>> async(ValueTaskProc proc)
-  // {}
-
-  std::shared_ptr<Task> await(std::shared_ptr<Task> task) {
-    auto current_task = GetCurrentTask();
-    task_mgr.Wait(current_task, task);
-
-    current_task->Yield();
-
-    return task;
-  }
-
   thread_local TaskManager task_mgr;
 }  // namespace smark::tasks

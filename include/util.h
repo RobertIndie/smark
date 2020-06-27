@@ -31,8 +31,7 @@ namespace smark::util {
   }
 
   /**
-   * Base class allowing use of member function shared_from_this in constructor function,member
-   * function.
+   *  Base class allowing use of member function shared_from_this.
    */
   template <class T> class enable_shared_from_this {
   public:
@@ -48,7 +47,7 @@ namespace smark::util {
     }
   };
 
-  template <class BaseT, class T, typename... Params>
+  template <class BaseT, class T = BaseT, typename... Params>
   std::shared_ptr<T> make_shared(Params&&... args) {
     std::shared_ptr<BaseT> rtn;
     T* t = (T*)calloc(1, sizeof(T));

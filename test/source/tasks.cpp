@@ -8,7 +8,7 @@ DISABLE_SOME_WARNINGS
 using namespace smark::tasks;
 using namespace smark::util;
 
-TEST_CASE("TaskSimple") {
+TEST_CASE("Task_Simple") {
   int task = 0;
   INIT_TASK;
 
@@ -29,7 +29,7 @@ TEST_CASE("TaskSimple") {
   CHECK(task == __task_count);
 }
 
-TEST_CASE("TaskMap2Task") {
+TEST_CASE("Task_Map2Task") {
   int task = 0;
   INIT_TASK;
 
@@ -53,7 +53,7 @@ TEST_CASE("TaskMap2Task") {
   CHECK(task == __task_count);
 }
 
-TEST_CASE("TaskAsync") {
+TEST_CASE("Task_Async") {
   int task = 0;
   INIT_TASK;
 
@@ -66,6 +66,7 @@ TEST_CASE("TaskAsync") {
       });
       SUB_TASK(task);
       await(child_task);
+      SUB_TASK(task);
     });
     t1->Start();
 
@@ -77,7 +78,7 @@ TEST_CASE("TaskAsync") {
   CHECK(task == __task_count);
 }
 
-TEST_CASE("TaskStopFromOutside") {
+TEST_CASE("Task_StopFromOutside") {
   int task = 0;
   INIT_TASK;
 
@@ -92,6 +93,7 @@ TEST_CASE("TaskStopFromOutside") {
       });
       SUB_TASK(task);
       await(child_task);
+      SUB_TASK(task);
     });
     t1->Start();
 
@@ -106,7 +108,7 @@ TEST_CASE("TaskStopFromOutside") {
   CHECK(task == __task_count);
 }
 
-TEST_CASE("TaskValueTask") {
+TEST_CASE("Task_ValueTask") {
   int task = 0;
   INIT_TASK;
 
@@ -121,6 +123,33 @@ TEST_CASE("TaskValueTask") {
     CHECK(co_task->GetState() == Task::State::Runable);
     co_task->Resume();
     CHECK(co_task->GetState() == Task::State::Dead);
+  }).join();
+
+  END_TASK;
+  CHECK(task == __task_count);
+}
+
+TEST_CASE("Task_ValueTaskAsync") {
+  int task = 0;
+  INIT_TASK;
+
+  std::thread([&task]() {
+    auto proc = [&](std::shared_ptr<Task> this_task) {
+      (void)this_task;
+      auto child_task = _async(int, [&](std::shared_ptr<ValueTask<int>> t) {
+        SUB_TASK(task);
+        t->Complete(std::make_shared<int>(10));
+      });
+      SUB_TASK(task);
+      CHECK(*(await(child_task)->GetResult()) == 10);
+      SUB_TASK(task);
+    };  // TODO: why? lambda-expression in template-argument only available with ‘-std=c++2a’ or
+        // ‘-std=gnu++2a’
+    auto t1 = _async(proc);
+    t1->Start();
+
+    while (task_mgr.RunOnce())
+      ;
   }).join();
 
   END_TASK;
