@@ -108,6 +108,31 @@ TEST_CASE("Task_StopFromOutside") {
   CHECK(task == __task_count);
 }
 
+TEST_CASE("Task_StopBeforeWait") {
+  int task = 0;
+  INIT_TASK;
+
+  std::thread([&task]() {
+    auto proc = [&](std::shared_ptr<Task> this_task) {
+      (void)this_task;
+      auto child_task = _async([](auto) {});
+      child_task->Stop();
+      SUB_TASK(task);
+      await(child_task);
+      SUB_TASK(task);
+    };
+    auto t1 = _async(proc);
+    t1->Start();
+
+    task_mgr.RunOnce();  // restart t1
+
+    CHECK(task_mgr.RunOnce() == 0);  // ensure no running task remain.
+  }).join();
+
+  END_TASK;
+  CHECK(task == __task_count);
+}
+
 TEST_CASE("Task_ValueTask") {
   int task = 0;
   INIT_TASK;

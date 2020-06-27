@@ -34,9 +34,19 @@ namespace smark::tasks {
     }
   }
 
-  void Task::Stop() { task_mgr.StopTask(shared_from_this()); }
+  void Task::Stop() {
+    state = State::Dead;
+    task_mgr.StopTask(shared_from_this());
+  }
 
   void TaskManager::Wait(std::shared_ptr<Task> waiter, std::shared_ptr<Task> waitting) {
+    if (waitting->state == Task::State::Dead) {  // waitting taks is completed.
+      completed_tasks_.erase(waitting);
+      starting_tasks_.push(waiter);  // start waiter.
+      return;
+    }
+
+    // waitting task is no completed currently.
     waitting_tasks_[waitting] = waiter;
     starting_tasks_.push(waitting);
   }
@@ -46,7 +56,12 @@ namespace smark::tasks {
     if (iter != waitting_tasks_.end()) {
       starting_tasks_.push(iter->second);
       waitting_tasks_.erase(iter);
+      return;
     }
+
+    // if no waitter is waitting, add to completed_tasks_ to avoid being freed when task is
+    // complete.
+    completed_tasks_.insert(task);
   }
 
   int TaskManager::RunOnce() {

@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
 #include <vector>
 
 #include "debug.h"
@@ -79,6 +80,7 @@ namespace smark::tasks {
     bool is_stopped = false;
 
   private:
+    std::set<std::shared_ptr<Task>> completed_tasks_;
     std::map<std::shared_ptr<Task>, std::shared_ptr<Task>> waitting_tasks_;
     std::queue<std::shared_ptr<Task>> starting_tasks_;
   };
