@@ -5,11 +5,16 @@
 
 #include "debug.h"
 #include "platform.h"
+#include "tasks.h"
 
 namespace smark::util {
   EventLoop::EventLoop() { uv_loop_init(loop_.get()); }
 
-  void EventLoop::Wait() { uv_run(loop_.get(), UV_RUN_DEFAULT); }
+  void EventLoop::Wait() {
+    while (uv_run(loop_.get(), UV_RUN_ONCE)) {
+      smark::tasks::task_mgr.RunOnce();
+    };
+  }
 
   void EventLoop::Stop() { uv_stop(loop_.get()); }
 

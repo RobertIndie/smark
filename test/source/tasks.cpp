@@ -138,10 +138,10 @@ TEST_CASE("Task_ValueTaskAsync") {
       (void)this_task;
       auto child_task = _async(int, [&](std::shared_ptr<ValueTask<int>> t) {
         SUB_TASK(task);
-        t->Complete(std::make_shared<int>(10));
+        t->Complete(10);
       });
       SUB_TASK(task);
-      CHECK(*(await(child_task)->GetResult()) == 10);
+      CHECK(await(child_task)->GetResult() == 10);
       SUB_TASK(task);
     };  // TODO: why? lambda-expression in template-argument only available with ‘-std=c++2a’ or
         // ‘-std=gnu++2a’

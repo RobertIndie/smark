@@ -59,15 +59,15 @@ namespace smark::tasks {
     void SetProc(ProcType proc) {
       SetProcContext_<ValueTask<T>>(shared_from_this<ValueTask<T>>(), proc);
     }
-    inline void Complete(std::shared_ptr<T> result) {
-      result_ = std::static_pointer_cast<void>(result);
+    inline void Complete(T result) {
+      result_ = result;
       Task::Stop();
     }
-    inline std::shared_ptr<T> GetResult() { return std::static_pointer_cast<T>(result_); }
+    inline T GetResult() { return result_; }
     inline State GetState() { return state; }
 
   private:
-    std::shared_ptr<void> result_;
+    T result_;
   };
 
   class TaskManager {
