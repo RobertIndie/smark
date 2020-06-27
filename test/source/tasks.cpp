@@ -115,7 +115,7 @@ TEST_CASE("Task_StopBeforeWait") {
   std::thread([&task]() {
     auto proc = [&](std::shared_ptr<Task> this_task) {
       (void)this_task;
-      auto child_task = _async([](auto) {});
+      auto child_task = void_task();
       child_task->Stop();
       SUB_TASK(task);
       await(child_task);

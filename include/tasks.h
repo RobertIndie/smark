@@ -39,6 +39,7 @@ namespace smark::tasks {
     void SetProcContext_(std::shared_ptr<TaskType> task_ptr,
                          std::function<void(std::shared_ptr<TaskType>)> proc) {
       task_ptr_ = cotask::task<>::create([&, task_ptr, proc]() {
+        // void task will not run to this.
         DEFER(std::dynamic_pointer_cast<Task>(task_ptr)->state = State::Dead;
               UnregisterTaskFromMap2Task();)
         RegisterTaskToMap2Task(std::dynamic_pointer_cast<Task>(task_ptr));
@@ -57,6 +58,7 @@ namespace smark::tasks {
   public:
     typedef std::function<void(std::shared_ptr<ValueTask<T>>)> ProcType;
     explicit ValueTask(ProcType proc) : Task() { SetProc(proc); }
+    ValueTask() = default;
     void SetProc(ProcType proc) {
       SetProcContext_<ValueTask<T>>(shared_from_this<ValueTask<T>>(), proc);
     }
@@ -93,6 +95,9 @@ namespace smark::tasks {
 #define task_async(proc) smark::util::make_shared<smark::tasks::Task>(proc)
 #define vt_async(T, proc) \
   smark::util::make_shared<smark::tasks::Task, smark::tasks::ValueTask<T>>(proc)
+#define void_task(...) GET_MACRO_V0_1(_0, ##__VA_ARGS__, vt_void_task, task_void_task)(__VA_ARGS__)
+#define task_void_task() smark::util::make_shared<smark::tasks::Task>()
+#define vt_void_task(T) smark::util::make_shared<smark::tasks::Task, smark::tasks::ValueTask<T>>()
 
   template <typename T> std::shared_ptr<T> await(std::shared_ptr<T> task) {
     auto current_task = GetCurrentTask();

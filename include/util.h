@@ -21,6 +21,7 @@ extern "C" {
 
 // macro overload util
 #define GET_MACRO_V2(_1, _2, NAME, ...) NAME
+#define GET_MACRO_V0_1(_0, _1, NAME, ...) NAME
 
 namespace smark::util {
   // enabe shared_from_this in constructor
