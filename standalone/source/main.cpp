@@ -6,12 +6,6 @@
 #include <unordered_map>
 using namespace smark;
 
-const std::unordered_map<std::string, smark::LanguageCode> languages{
-    {"en", smark::LanguageCode::EN},
-    {"de", smark::LanguageCode::DE},
-    {"es", smark::LanguageCode::ES},
-    {"fr", smark::LanguageCode::FR},
-};
 
 int main(int argc, char** argv) {
   cxxopts::Options options(argv[0], "A program to welcome the world!");
@@ -28,26 +22,26 @@ int main(int argc, char** argv) {
     ("c,connection","set the number of connection",cxxopts::value<uint32_t>(connection_count)->default_value("1"))
   ;
   
- 
+ //exception handing
   try {
     auto result=options.parse(argc,argv);
     }
    
-    catch(cxxopts::OptionParseException & miss1){
-      std::string str=miss1.what();
+    catch(cxxopts::OptionParseException & ex1){
+      std::string str=ex1.what();
       std::cout<<str<<std::endl;
       exit(0);
     }
  
-    catch(cxxopts::OptionSpecException & miss2){
-      std::string str=miss2.what();
+    catch(cxxopts::OptionSpecException & ex2){
+      std::string str=ex2.what();
       std::cout<<str<<std::endl;
       exit(0);
     }
     
   
   
-//smark参数初始化及其调用
+//smark parameter initialization and its call
   Smark smark;
   smark.setting.connection_count =connection_count; 
   smark.setting.thread_count = thread_count; 
