@@ -27,34 +27,21 @@ int main(int argc, char** argv) {
     ("t,thread","set the number of threads",cxxopts::value<uint32_t>(thread_count)->default_value("1"))
     ("c,connection","set the number of connection",cxxopts::value<uint32_t>(connection_count)->default_value("1"))
   ;
-  // clang-format on
-  // auto result=options.parse(argc,argv);
-  // if(!(result.count("port"))){
-  //   std::cout<<"set remote port error"<<std::endl;
-  //   port=result["port"].as<uint16_t>();
-  // }
-  // if(!(result.count("ip"))){
-  //   std::cout<<"set remote ip error"<<std::endl;
-  //   ip=result["ip"].as<std::string>();
-  // }
-
-  // if(!(result.count("thread"))){
-  //   std::cout<<"set the number of thread error"<<std::endl;
-  //   thread_count=result["thread"].as<uint32_t>();
-  // }
-
-  //  if(!(result.count("connection"))){
-  //   std::cout<<"set the number of connection error"<<std::endl;
-  //   connection_count=result["thread"].as<uint32_t>();
-  // }
+  
+ 
   auto result=options.parse(argc,argv);
   if(!result.count("option"))
   {
     std::cout<<"获取检索选项失败"<<std::endl;
   }
-  Smark smark;
-  smark.Run();
 
+  Smark smark;
+  smark.setting.connection_count =connection_count; 
+  smark.setting.thread_count = thread_count; 
+  smark.setting.ip = ip;
+  smark.setting.port = port;
+  smark.Run();
+  std::cout<<smark.status.finish_count<<std::endl;
 
   return 0;
 }
