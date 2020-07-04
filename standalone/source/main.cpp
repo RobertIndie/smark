@@ -29,12 +29,25 @@ int main(int argc, char** argv) {
   ;
   
  
-  auto result=options.parse(argc,argv);
-  if(!result.count("option"))
-  {
-    std::cout<<"获取检索选项失败"<<std::endl;
-  }
-
+  try {
+    auto result=options.parse(argc,argv);
+    }
+   
+    catch(cxxopts::OptionParseException & miss1){
+      std::string str=miss1.what();
+      std::cout<<str<<std::endl;
+      exit(0);
+    }
+ 
+    catch(cxxopts::OptionSpecException & miss2){
+      std::string str=miss2.what();
+      std::cout<<str<<std::endl;
+      exit(0);
+    }
+    
+  
+  
+//smark参数初始化及其调用
   Smark smark;
   smark.setting.connection_count =connection_count; 
   smark.setting.thread_count = thread_count; 
@@ -42,6 +55,5 @@ int main(int argc, char** argv) {
   smark.setting.port = port;
   smark.Run();
   std::cout<<smark.status.finish_count<<std::endl;
-
   return 0;
 }
