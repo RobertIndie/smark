@@ -6,13 +6,12 @@
 #include <unordered_map>
 using namespace smark;
 
-
 int main(int argc, char** argv) {
   cxxopts::Options options(argv[0], "A program to welcome the world!");
 
   std::string ip;
   uint16_t port;
-  uint32_t connection_count,thread_count;
+  uint32_t connection_count, thread_count;
 
   // clang-format off
   options.add_options()
