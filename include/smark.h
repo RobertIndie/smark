@@ -10,8 +10,6 @@
 
 namespace smark {
 
-  enum class LanguageCode { EN, DE, ES, FR };
-
   class SmarkSetting {
   public:
     uint32_t connection_count = 0;
@@ -32,9 +30,7 @@ namespace smark {
     std::string name;
 
   public:
-    Smark(std::string name);
     Smark() {}
-    std::string greet(LanguageCode lang = LanguageCode::EN) const;
     void Run();
     SmarkSetting setting;
     Status status;
