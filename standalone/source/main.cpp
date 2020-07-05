@@ -15,26 +15,27 @@ int main(int argc, char** argv) {
 
   // clang-format off
   options.add_options()
+    ("h,help","show help")
     ("p,port","set remote port",cxxopts::value<uint16_t>(port)->default_value("80"))
     ("ip","set remote ip",cxxopts::value<std::string>(ip)->default_value("127.0.0.1"))
     ("t,thread","set the number of threads",cxxopts::value<uint32_t>(thread_count)->default_value("1"))
     ("c,connection","set the number of connection",cxxopts::value<uint32_t>(connection_count)->default_value("1"))
   ;
-  //clang-format on
+  // clang-format on
   
  //exception handing
   try {
     auto result=options.parse(argc,argv);
     }
    
-    catch(cxxopts::OptionParseException & ex1){
-      std::string str=ex1.what();
+    catch(cxxopts::OptionParseException & ex){
+      std::string str=ex.what();
       std::cout<<str<<std::endl;
       exit(0);
     }
  
-    catch(cxxopts::OptionSpecException & ex2){
-      std::string str=ex2.what();
+    catch(cxxopts::OptionSpecException & ex){
+      std::string str=ex.what();
       std::cout<<str<<std::endl;
       exit(0);
     }
