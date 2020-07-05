@@ -319,13 +319,3 @@ TEST_CASE("Script_Smark") {
   smark.Run();
 }
 
-TEST_CASE("Smark") {
-  using namespace smark;
-
-  Smark smark("World");
-
-  CHECK(smark.greet(LanguageCode::EN) == "Hello, World!");
-  CHECK(smark.greet(LanguageCode::DE) == "Hallo World!");
-  CHECK(smark.greet(LanguageCode::ES) == "¡Hola World!");
-  CHECK(smark.greet(LanguageCode::FR) == "Bonjour World!");
-}
