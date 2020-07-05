@@ -3,7 +3,7 @@ coverage:
     patch: false
     project:
       default:
-        threshold: 0.1%
+        threshold: 1 # Allow coverage to drop by up to 1% in a PR before marking it failed
   range: 30..60
 
 ignore:
