@@ -11,8 +11,12 @@ namespace smark::util {
   EventLoop::EventLoop() { uv_loop_init(loop_.get()); }
 
   void EventLoop::Wait() {
-    while (uv_run(loop_.get(), UV_RUN_ONCE)) {
-      smark::tasks::task_mgr.RunOnce();
+    while (true) {
+      int rtc = smark::tasks::task_mgr.RunOnce();
+      int uv_res = uv_run(loop_.get(), UV_RUN_ONCE);
+      DLOG("Run task count:" << LOG_VALUE(rtc) << LOG_VALUE(uv_res)
+                             << LOG_NV("IsEmpty", smark::tasks::task_mgr.IsEmpty()));
+      if (smark::tasks::task_mgr.IsEmpty() && !uv_run(loop_.get(), UV_RUN_ONCE)) break;
     };
   }
 

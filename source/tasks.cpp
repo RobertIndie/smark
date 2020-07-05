@@ -67,24 +67,30 @@ namespace smark::tasks {
   int TaskManager::RunOnce() {
     if (is_stopped) return 0;
     int run_task_count = 0;
-    if (starting_tasks_.size() == 0) return 0;
-    auto task = starting_tasks_.front();  // use front before size check is undefined behaivour.
-    starting_tasks_.pop();
-    switch (task->state) {
-      case Task::State::New:
-        task->Start();
-        run_task_count++;
-        break;
+    while (starting_tasks_.size()) {
+      auto task = starting_tasks_.front();  // use front before size check is undefined behaivour.
+      starting_tasks_.pop();
+      switch (task->state) {
+        case Task::State::New:
+          task->Start();
+          run_task_count++;
+          break;
 
-      case Task::State::Runable:
-        task->Resume();
-        run_task_count++;
-        break;
+        case Task::State::Runable:
+          task->Resume();
+          run_task_count++;
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
     return run_task_count;
+  }
+
+  bool TaskManager::IsEmpty() {
+    if (completed_tasks_.size() || waitting_tasks_.size() || starting_tasks_.size()) return false;
+    return true;
   }
 
   void TaskManager::Stop() { is_stopped = true; }

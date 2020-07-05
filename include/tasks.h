@@ -79,6 +79,7 @@ namespace smark::tasks {
     void StopTask(std::shared_ptr<Task> task);
     int RunOnce();
     void Stop();
+    bool IsEmpty();
     bool is_stopped = false;
 
   private:

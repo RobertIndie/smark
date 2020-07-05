@@ -10,6 +10,7 @@ DISABLE_SOME_WARNINGS
 
 #include "debug.h"
 #include "script.h"
+#include "tasks.h"
 #include "util.h"
 
 #if defined(_WIN32) || defined(WIN32)
@@ -152,6 +153,55 @@ TEST_CASE("HttpClient") {
   });
 
   el.Wait();
+  END_TASK;
+  CHECK(task == __task_count);
+}
+
+TEST_CASE("HttpAsyncClient") {
+  auto svr = new SimpleHttpServer();
+  DEFER(delete svr;)
+  std::thread* thread = nullptr;
+  uint16_t p = RunServer(svr, &thread);
+  // DEFER(delete thread;)
+  DLOG("Run Http server on port:" << p);
+  INIT_TASK;
+  int task = 0;
+
+  std::thread([=, &task]() {
+    auto req = std::make_shared<smark::util::HttpRequest>();
+    req->method = "Get";
+    req->request_uri = "/test";
+    auto test_header = std::make_shared<smark::util::HttpPacket::Header>();
+    test_header->name = "test-header";
+    test_header->value = "test_value";
+    req->headers.push_back(test_header);
+    req->body = "This is a request";
+
+    smark::util::EventLoop el;
+    auto proc = [&](auto) {
+      HttpAsyncClient cli(&el);
+      auto status = await(cli.ConnectAsync("127.0.0.1", p))->GetResult();
+      if (status) {
+        ERR("Connect error:" << smark::util::EventLoop::GetErrorStr(status));
+      }
+      DLOG("Connected");
+      auto res = await(cli.RequestAsync(req.get()))->GetResult();
+      DLOG("Get response.");
+      CHECK(STR_COMPARE(res->status_code, "OK"));
+      int header_count = res->headers.size();
+      CHECK(header_count == 1);
+      auto test_header = res->headers[0];
+      CHECK(STR_COMPARE(test_header->name, "test-header"));
+      CHECK(STR_COMPARE(test_header->value, "test_value"));
+      CHECK(STR_COMPARE(res->body, "This is a response"));
+      cli.Close();
+      SUB_TASK(task);
+    };
+    _async(proc)->Start();
+
+    el.Wait();
+  }).join();
+
   END_TASK;
   CHECK(task == __task_count);
 }
