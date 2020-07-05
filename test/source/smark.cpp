@@ -318,4 +318,3 @@ TEST_CASE("Script_Smark") {
         "end\n";
   smark.Run();
 }
-
