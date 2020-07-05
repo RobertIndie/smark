@@ -22,33 +22,31 @@ int main(int argc, char** argv) {
     ("c,connection","set the number of connection",cxxopts::value<uint32_t>(connection_count)->default_value("1"))
   ;
   // clang-format on
-  
- //exception handing
+
+  // exception handing
   try {
-    auto result=options.parse(argc,argv);
-    }
-   
-    catch(cxxopts::OptionParseException & ex){
-      std::string str=ex.what();
-      std::cout<<str<<std::endl;
-      exit(0);
-    }
- 
-    catch(cxxopts::OptionSpecException & ex){
-      std::string str=ex.what();
-      std::cout<<str<<std::endl;
-      exit(0);
-    }
-    
-  
-  
-//smark parameter initialization and its call
+    auto result = options.parse(argc, argv);
+  }
+
+  catch (cxxopts::OptionParseException& ex) {
+    std::string str = ex.what();
+    std::cout << str << std::endl;
+    exit(0);
+  }
+
+  catch (cxxopts::OptionSpecException& ex) {
+    std::string str = ex.what();
+    std::cout << str << std::endl;
+    exit(0);
+  }
+
+  // smark parameter initialization and its call
   Smark smark;
-  smark.setting.connection_count =connection_count; 
-  smark.setting.thread_count = thread_count; 
+  smark.setting.connection_count = connection_count;
+  smark.setting.thread_count = thread_count;
   smark.setting.ip = ip;
   smark.setting.port = port;
   smark.Run();
-  std::cout<<smark.status.finish_count<<std::endl;
+  std::cout << smark.status.finish_count << std::endl;
   return 0;
 }

@@ -7,7 +7,6 @@
 #include "util.h"
 using namespace smark;
 
-
 namespace smark {
   void Smark::Run() {
     uint32_t conn_per_thread = setting.connection_count / setting.thread_count;
