@@ -1,3 +1,11 @@
+coverage:
+  status:
+    patch: false
+    project:
+      default:
+        threshold: 0.1%
+  range: 30..60
+
 ignore:
   - "test"
   - "third_party"
