@@ -19,7 +19,48 @@ extern "C" {
       = std::unique_ptr<void, std::function<void(void*)>>{reinterpret_cast<void*>(1), \
                                                           [&](void*) { X }};
 
+// macro overload util
+#define GET_MACRO_V2(_1, _2, NAME, ...) NAME
+#define GET_MACRO_V0_1(_0, _1, NAME, ...) NAME
+
 namespace smark::util {
+  // enabe shared_from_this in constructor
+  template <class T, class PtrT> void deleter(PtrT* __ptr) {
+    auto t = static_cast<T*>(__ptr);
+    t->~T();
+    free(t);
+  }
+
+  /**
+   *  Base class allowing use of member function shared_from_this.
+   */
+  template <class T> class enable_shared_from_this {
+  public:
+    std::shared_ptr<T>* _construct_pself;
+    std::weak_ptr<T> _construct_self;
+
+    template <class RT = T> std::shared_ptr<RT> shared_from_this() {
+      if (_construct_pself) {
+        return std::static_pointer_cast<RT>(*_construct_pself);  // in constructor
+      } else {
+        return std::static_pointer_cast<RT>(_construct_self.lock());
+      }
+    }
+  };
+
+  template <class BaseT, class T = BaseT, typename... Params>
+  std::shared_ptr<T> make_shared(Params&&... args) {
+    std::shared_ptr<BaseT> rtn;
+    T* t = (T*)calloc(1, sizeof(T));
+    rtn.reset(t, deleter<BaseT, T>);
+    t->_construct_pself = &rtn;
+    t = new (t) T(std::forward<Params>(args)...);
+    t->_construct_pself = NULL;
+    t->_construct_self = rtn;
+
+    return std::static_pointer_cast<T>(rtn);
+  }
+
   typedef std::function<void(int)> CallbackType;  // void(int status)
   class EventLoop;
   class IEventObj {

@@ -25,4 +25,33 @@ namespace smark {
     });
   }
 
+  HttpAsyncClient::HttpAsyncClient(smark::util::EventLoop* el) : HttpClient(el) {}
+
+  std::shared_ptr<tasks::ValueTask<int>> HttpAsyncClient::ConnectAsync(std::string ip,
+                                                                       int16_t port) {
+    auto task = _async(int, [=](std::shared_ptr<tasks::ValueTask<int>> this_task) {
+      DLOG("Try to connect:" << LOG_VALUE(ip) << LOG_VALUE(port));
+      Connect(ip, port, [=](int status) {
+        DLOG("Connected result:" << LOG_VALUE(status));
+        this_task->Complete(status);
+      });
+    });
+    return task;
+  }
+
+  std::shared_ptr<tasks::ValueTask<std::shared_ptr<util::HttpResponse>>>
+  HttpAsyncClient::RequestAsync(util::HttpRequest* request) {
+    auto task = _async(
+        std::shared_ptr<util::HttpResponse>,
+        [=](std::shared_ptr<tasks::ValueTask<std::shared_ptr<util::HttpResponse>>> this_task) {
+          on_response = [this_task](auto, std::shared_ptr<util::HttpResponse> res) {
+            this_task->Complete(res);
+          };
+          HttpClient::Request(request);
+        });
+    return task;
+  }
+
+  void HttpAsyncClient::Close() { Socket::Close(); }
+
 }  // namespace smark

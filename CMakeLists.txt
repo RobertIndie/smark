@@ -52,6 +52,33 @@ packageProject(
   DEPENDENCIES 
 )
 
+CPMAddPackage(
+  NAME libcopp
+  GITHUB_REPOSITORY owt5008137/libcopp
+  GIT_TAG 1.2.1
+)
+
+packageProject(
+  NAME copp
+  VERSION ${PROJECT_VERSION}
+  BINARY_DIR ${libcopp_BINARY_DIR}
+  INCLUDE_DIR ${libcopp_SOURCE_DIR}/include
+  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+  DEPENDENCIES 
+)
+
+packageProject(
+  NAME cotask
+  VERSION ${PROJECT_VERSION}
+  BINARY_DIR ${libcopp_BINARY_DIR}
+  INCLUDE_DIR ${libcopp_SOURCE_DIR}/include
+  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+  DEPENDENCIES 
+)
+
+target_include_directories(copp PUBLIC ${libcopp_SOURCE_DIR}/include)
+target_include_directories(cotask PUBLIC ${libcopp_SOURCE_DIR}/include)
+
 if (NOT TARGET lua)
   CPMFindPackage(
     NAME lua
@@ -70,10 +97,12 @@ if (NOT TARGET lua)
     add_library(LuaForGlue ${lua_sources} ${lua_headers})
     set_target_properties(LuaForGlue PROPERTIES LINKER_LANGUAGE C)
 
-    target_include_directories(LuaForGlue
-      PUBLIC
-        $<BUILD_INTERFACE:${lua_SOURCE_DIR}>
-    )
+    # target_include_directories(LuaForGlue
+    #   PUBLIC
+    #     $<BUILD_INTERFACE:${lua_SOURCE_DIR}>
+    # )
+
+    target_include_directories(LuaForGlue PUBLIC ${lua_SOURCE_DIR})
 
     if(ANDROID)
     target_compile_definitions(LuaForGlue PRIVATE LUA_USE_POSIX LUA_USE_DLOPEN)
@@ -117,7 +146,7 @@ target_compile_options(Smark PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
 # target_link_libraries(Smark PUBLIC cxxopts)
-target_link_libraries(Smark PUBLIC uv_a HttpParser LuaForGlue)
+target_link_libraries(Smark PUBLIC uv_a HttpParser LuaForGlue copp cotask)
 
 target_include_directories(Smark
   PUBLIC
@@ -134,5 +163,5 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "uv_a" "HttpParser" "LuaForGlue"
+  DEPENDENCIES 
 )

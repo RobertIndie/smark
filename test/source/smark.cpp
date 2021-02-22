@@ -10,6 +10,7 @@ DISABLE_SOME_WARNINGS
 
 #include "debug.h"
 #include "script.h"
+#include "tasks.h"
 #include "util.h"
 
 #if defined(_WIN32) || defined(WIN32)
@@ -18,16 +19,6 @@ DISABLE_SOME_WARNINGS
 #endif
 
 #include "testsvr.h"
-
-#define INIT_TASK int __task_count = __COUNTER__
-#define SUB_TASK(task) \
-  (void)__COUNTER__;   \
-  task++
-#define END_TASK __task_count = __COUNTER__ - __task_count - 1
-
-// do not use '==' to compare string
-// do not use string.compare: fail on "This is a response"
-#define STR_COMPARE(str, value) strcmp(str.c_str(), value) == 0
 
 using namespace smark_tests;
 
@@ -54,7 +45,7 @@ TEST_CASE("TCPClient") {
   int task = 0;
   INIT_TASK;
 
-  util::EventLoop el;
+  smark::util::EventLoop el;
   TCPClient cli(&el);
 
   const char data[] = "Hello world";
@@ -66,11 +57,11 @@ TEST_CASE("TCPClient") {
   };
   cli.Connect("127.0.0.1", port, [&cli, &task, &data](int status) {
     if (status) {
-      ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+      ERR("Connect error:" << smark::util::EventLoop::GetErrorStr(status));
     }
     cli.Write(data, sizeof(data), [](int status) {
       if (status) {
-        ERR("Write error:" << util::EventLoop::GetErrorStr(status));
+        ERR("Write error:" << smark::util::EventLoop::GetErrorStr(status));
       }
     });
   });
@@ -87,12 +78,12 @@ TEST_CASE("FailConnect") {
   int task = 0;
   INIT_TASK;
 
-  util::EventLoop el;
+  smark::util::EventLoop el;
   TCPClient cli(&el);
   cli.Connect("127.0.0.1", port, [&task](int status) {
     SUB_TASK(task);
     if (status) {
-      DLOG("Test fail connect:" << util::EventLoop::GetErrorStr(status));
+      DLOG("Test fail connect:" << smark::util::EventLoop::GetErrorStr(status));
     }
 
     // Use macro instead of actual status code.
@@ -132,18 +123,18 @@ TEST_CASE("HttpClient") {
   DLOG("Run Http server on port:" << p);
   INIT_TASK;
   int task = 0;
-  auto req = std::make_shared<util::HttpRequest>();
+  auto req = std::make_shared<smark::util::HttpRequest>();
   req->method = "Get";
   req->request_uri = "/test";
-  auto test_header = std::make_shared<util::HttpPacket::Header>();
+  auto test_header = std::make_shared<smark::util::HttpPacket::Header>();
   test_header->name = "test-header";
   test_header->value = "test_value";
   req->headers.push_back(test_header);
   req->body = "This is a request";
 
-  util::EventLoop el;
+  smark::util::EventLoop el;
   HttpClient cli(&el);
-  cli.on_response = [&task, &el, &cli](auto, std::shared_ptr<util::HttpResponse> res) {
+  cli.on_response = [&task, &el, &cli](auto, std::shared_ptr<smark::util::HttpResponse> res) {
     SUB_TASK(task);
     CHECK(STR_COMPARE(res->status_code, "OK"));
     int header_count = res->headers.size();
@@ -156,12 +147,61 @@ TEST_CASE("HttpClient") {
   };
   cli.Connect("127.0.0.1", p, [&cli, &req](int status) {
     if (status) {
-      ERR("Connect error:" << util::EventLoop::GetErrorStr(status));
+      ERR("Connect error:" << smark::util::EventLoop::GetErrorStr(status));
     }
     cli.Request(req.get());
   });
 
   el.Wait();
+  END_TASK;
+  CHECK(task == __task_count);
+}
+
+TEST_CASE("HttpAsyncClient") {
+  auto svr = new SimpleHttpServer();
+  DEFER(delete svr;)
+  std::thread* thread = nullptr;
+  uint16_t p = RunServer(svr, &thread);
+  // DEFER(delete thread;)
+  DLOG("Run Http server on port:" << p);
+  INIT_TASK;
+  int task = 0;
+
+  std::thread([=, &task]() {
+    auto req = std::make_shared<smark::util::HttpRequest>();
+    req->method = "Get";
+    req->request_uri = "/test";
+    auto test_header = std::make_shared<smark::util::HttpPacket::Header>();
+    test_header->name = "test-header";
+    test_header->value = "test_value";
+    req->headers.push_back(test_header);
+    req->body = "This is a request";
+
+    smark::util::EventLoop el;
+    auto proc = [&](auto) {
+      HttpAsyncClient cli(&el);
+      auto status = await(cli.ConnectAsync("127.0.0.1", p))->GetResult();
+      if (status) {
+        ERR("Connect error:" << smark::util::EventLoop::GetErrorStr(status));
+      }
+      DLOG("Connected");
+      auto res = await(cli.RequestAsync(req.get()))->GetResult();
+      DLOG("Get response.");
+      CHECK(STR_COMPARE(res->status_code, "OK"));
+      int header_count = res->headers.size();
+      CHECK(header_count == 1);
+      auto test_header = res->headers[0];
+      CHECK(STR_COMPARE(test_header->name, "test-header"));
+      CHECK(STR_COMPARE(test_header->value, "test_value"));
+      CHECK(STR_COMPARE(res->body, "This is a response"));
+      cli.Close();
+      SUB_TASK(task);
+    };
+    _async(proc)->Start();
+
+    el.Wait();
+  }).join();
+
   END_TASK;
   CHECK(task == __task_count);
 }
@@ -246,10 +286,10 @@ TEST_CASE("Script_Response") {
         " pass=true\n"
         "end";
   script.Run(code);
-  util::HttpResponse res;
+  smark::util::HttpResponse res;
   res.body = "content";
   res.status_code = "200";
-  auto header = std::make_shared<util::HttpPacket::Header>();
+  auto header = std::make_shared<smark::util::HttpPacket::Header>();
   header->name = "test";
   header->value = "value";
   res.headers.push_back(header);
